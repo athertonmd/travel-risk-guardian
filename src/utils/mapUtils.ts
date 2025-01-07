@@ -11,36 +11,32 @@ export const initializeMap = (
     container,
     style: 'mapbox://styles/mapbox/light-v11',
     projection: 'globe',
-    zoom: 3.5,
-    center: [15, 50],
+    zoom: 1.5,
+    center: [0, 20],
     pitch: 45,
   });
 };
 
 export const setupMapLayers = (map: mapboxgl.Map) => {
+  // Add source for country boundaries
   map.addSource('countries', {
     type: 'vector',
     url: 'mapbox://mapbox.country-boundaries-v1'
   });
 
+  // Add the country fill layer
   map.addLayer({
     id: 'country-fills',
     type: 'fill',
     source: 'countries',
     'source-layer': 'country_boundaries',
     paint: {
-      'fill-color': [
-        'case',
-        ['==', ['get', 'risk_level'], 'extreme'], '#ef4444',
-        ['==', ['get', 'risk_level'], 'high'], '#f97316',
-        ['==', ['get', 'risk_level'], 'medium'], '#eab308',
-        ['==', ['get', 'risk_level'], 'low'], '#22c55e',
-        'rgba(0, 0, 0, 0)'
-      ],
-      'fill-opacity': 0.5
+      'fill-color': '#cccccc',
+      'fill-opacity': 0.4
     }
   });
 
+  // Add country borders
   map.addLayer({
     id: 'country-borders',
     type: 'line',
@@ -54,34 +50,42 @@ export const setupMapLayers = (map: mapboxgl.Map) => {
 };
 
 export const updateCountryColors = (map: mapboxgl.Map, assessments: RiskAssessment[]) => {
-  const countryFeatures = assessments.map(assessment => ({
-    type: 'Feature' as const,
-    properties: {
-      risk_level: assessment.assessment,
-      name: assessment.country
-    },
-    geometry: {
-      type: 'Point' as const,
-      coordinates: [0, 0]
-    }
-  }));
+  if (!map.isStyleLoaded()) return;
 
-  if (map.getSource('risk-data')) {
-    (map.getSource('risk-data') as mapboxgl.GeoJSONSource).setData({
-      type: 'FeatureCollection',
-      features: countryFeatures
-    });
-  }
+  // Create a lookup object for quick access to country risk levels
+  const countryRiskLevels: { [key: string]: string } = {};
+  assessments.forEach(assessment => {
+    countryRiskLevels[assessment.country.toUpperCase()] = assessment.assessment;
+  });
+
+  // Set a filter and color expression for the fill layer
+  const fillColor = [
+    'case',
+    ['in', ['get', 'name_en'], ['literal', Object.keys(countryRiskLevels)]],
+    [
+      'match',
+      ['get', 'name_en'],
+      ...Object.entries(countryRiskLevels).flatMap(([country, risk]) => [
+        country,
+        risk === 'extreme' ? '#ef4444' :
+        risk === 'high' ? '#f97316' :
+        risk === 'medium' ? '#eab308' :
+        '#22c55e' // low risk
+      ]),
+      '#cccccc' // default color for countries without assessment
+    ],
+    '#cccccc' // default color for countries without assessment
+  ];
+
+  map.setPaintProperty('country-fills', 'fill-color', fillColor);
+  map.setPaintProperty('country-fills', 'fill-opacity', 0.6);
 };
 
 export const setupMapInteractions = (map: mapboxgl.Map) => {
+  // Add hover effect
   map.on('mousemove', 'country-fills', (e) => {
     if (e.features && e.features.length > 0) {
-      const feature = e.features[0];
-      const riskLevel = feature.properties.risk_level;
-      if (riskLevel) {
-        map.getCanvas().style.cursor = 'pointer';
-      }
+      map.getCanvas().style.cursor = 'pointer';
     }
   });
 
