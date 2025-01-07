@@ -26,6 +26,7 @@ const RiskMap = ({ assessments, searchTerm }: RiskMapProps) => {
   const map = useRef<mapboxgl.Map | null>(null);
   const { mapboxToken, isLoading, error } = useMapbox();
   const searchTermRef = useRef(searchTerm);
+  const sourceLoadedRef = useRef(false);
 
   useEffect(() => {
     searchTermRef.current = searchTerm;
@@ -43,87 +44,84 @@ const RiskMap = ({ assessments, searchTerm }: RiskMapProps) => {
           console.log('Style loaded, setting up layers...');
           setupMapLayers(mapInstance);
           
-          // Wait for the source to be loaded
-          const waitForSource = () => {
-            if (mapInstance.getSource('countries') && mapInstance.isSourceLoaded('countries')) {
-              console.log('Source loaded, updating colors...');
-              updateCountryColors(mapInstance, assessments);
-              setupMapInteractions(mapInstance, assessments);
-
-              // Setup search functionality
-              const handleSearch = () => {
-                const currentSearchTerm = searchTermRef.current;
-                if (!currentSearchTerm) return;
-
-                const searchedAssessment = assessments.find(
-                  assessment => assessment.country.toLowerCase().includes(currentSearchTerm.toLowerCase())
-                );
-
-                if (searchedAssessment) {
-                  try {
-                    // Query features for the searched country
-                    const features = mapInstance.queryRenderedFeatures({
-                      layers: ['country-boundaries'],
-                      filter: ['==', ['get', 'name_en'], searchedAssessment.country]
-                    });
-
-                    if (features.length > 0) {
-                      // Calculate the center of the country
-                      const bounds = new mapboxgl.LngLatBounds();
-                      features.forEach(feature => {
-                        if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') {
-                          const coords = feature.geometry.type === 'Polygon' 
-                            ? [feature.geometry.coordinates[0]]
-                            : feature.geometry.coordinates[0];
-                          
-                          coords.forEach(ring => {
-                            ring.forEach((coord: any) => {
-                              bounds.extend(coord as mapboxgl.LngLatLike);
-                            });
-                          });
-                        }
-                      });
-
-                      // Animate to the country
-                      mapInstance.fitBounds(bounds, {
-                        padding: 50,
-                        maxZoom: 5,
-                        duration: 2000,
-                        essential: true
-                      });
-
-                      // After centering, rotate the map for better view
-                      setTimeout(() => {
-                        mapInstance.easeTo({
-                          bearing: 0,
-                          pitch: 45,
-                          duration: 2000,
-                          essential: true
-                        });
-                      }, 2000);
-                    }
-                  } catch (error) {
-                    console.error('Error during search:', error);
-                  }
-                }
-              };
-
-              // Handle initial search
-              handleSearch();
-
-              // Remove previous event listener if exists
-              mapInstance.off('moveend', handleSearch);
-              
-              // Add event listener for subsequent searches
-              mapInstance.on('moveend', handleSearch);
-            } else {
-              // Keep checking until source is loaded
-              requestAnimationFrame(waitForSource);
+          // Listen for the source loading
+          mapInstance.on('sourcedata', (e) => {
+            if (e.sourceId === 'countries' && mapInstance.isSourceLoaded('countries')) {
+              if (!sourceLoadedRef.current) {
+                console.log('Source loaded for the first time, updating colors...');
+                sourceLoadedRef.current = true;
+                updateCountryColors(mapInstance, assessments);
+                setupMapInteractions(mapInstance, assessments);
+                handleSearch();
+              }
             }
-          };
-
-          waitForSource();
+          });
         });
+
+        // Setup search functionality
+        const handleSearch = () => {
+          if (!mapInstance.isStyleLoaded() || !sourceLoadedRef.current) {
+            console.log('Map or source not ready yet, skipping search');
+            return;
+          }
+
+          const currentSearchTerm = searchTermRef.current.toLowerCase();
+          if (!currentSearchTerm) return;
+
+          const searchedAssessment = assessments.find(
+            assessment => assessment.country.toLowerCase().includes(currentSearchTerm)
+          );
+
+          if (searchedAssessment) {
+            try {
+              const features = mapInstance.querySourceFeatures('countries', {
+                sourceLayer: 'country_boundaries',
+                filter: ['==', ['downcase', ['get', 'name_en']], searchedAssessment.country.toLowerCase()]
+              });
+
+              if (features.length > 0) {
+                const bounds = new mapboxgl.LngLatBounds();
+                features.forEach(feature => {
+                  if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') {
+                    const coords = feature.geometry.type === 'Polygon' 
+                      ? [feature.geometry.coordinates[0]]
+                      : feature.geometry.coordinates[0];
+                    
+                    coords.forEach(ring => {
+                      ring.forEach((coord: any) => {
+                        bounds.extend(coord as mapboxgl.LngLatLike);
+                      });
+                    });
+                  }
+                });
+
+                mapInstance.fitBounds(bounds, {
+                  padding: 50,
+                  maxZoom: 5,
+                  duration: 2000
+                });
+
+                setTimeout(() => {
+                  mapInstance.easeTo({
+                    bearing: 0,
+                    pitch: 45,
+                    duration: 2000
+                  });
+                }, 2000);
+              }
+            } catch (error) {
+              console.error('Error during search:', error);
+            }
+          }
+        };
+
+        // Handle initial search
+        if (searchTerm) {
+          handleSearch();
+        }
+
+        // Add event listener for subsequent searches
+        mapInstance.on('moveend', handleSearch);
       }
     } catch (error) {
       console.error('Error initializing map:', error);
@@ -133,6 +131,7 @@ const RiskMap = ({ assessments, searchTerm }: RiskMapProps) => {
       if (map.current) {
         map.current.remove();
         map.current = null;
+        sourceLoadedRef.current = false;
       }
     };
   }, [mapboxToken, assessments]);
