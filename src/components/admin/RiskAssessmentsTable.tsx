@@ -12,6 +12,7 @@ import { AddRiskAssessmentDialog } from "./AddRiskAssessmentDialog";
 import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
 import { EditRiskAssessmentDialog } from "./EditRiskAssessmentDialog";
 import { RiskAssessmentsTableBody } from "./RiskAssessmentsTableBody";
+import { RiskAssessmentSearch } from "./RiskAssessmentSearch";
 
 interface RiskAssessment {
   id: string;
@@ -34,6 +35,8 @@ export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessments
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedAssessment, setSelectedAssessment] = useState<RiskAssessment | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [assessmentFilter, setAssessmentFilter] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -72,6 +75,12 @@ export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessments
     setEditDialogOpen(true);
   };
 
+  const filteredAssessments = assessments?.filter((assessment) => {
+    const matchesSearch = assessment.country.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesAssessment = !assessmentFilter || assessment.assessment === assessmentFilter;
+    return matchesSearch && matchesAssessment;
+  });
+
   return (
     <>
       <div className="mb-4 flex items-center justify-between">
@@ -79,6 +88,13 @@ export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessments
           <AddRiskAssessmentDialog />
         </div>
       </div>
+
+      <RiskAssessmentSearch
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        assessmentFilter={assessmentFilter}
+        onAssessmentFilterChange={setAssessmentFilter}
+      />
 
       <div className="rounded-md border">
         <Table>
@@ -94,7 +110,7 @@ export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessments
             </TableRow>
           </TableHeader>
           <RiskAssessmentsTableBody
-            assessments={assessments}
+            assessments={filteredAssessments}
             isLoading={isLoading}
             onDelete={confirmDelete}
             onEdit={handleEdit}
