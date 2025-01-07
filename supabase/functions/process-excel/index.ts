@@ -34,7 +34,30 @@ serve(async (req) => {
     const worksheet = workbook.Sheets[workbook.SheetNames[0]]
     const data = XLSX.utils.sheet_to_json(worksheet)
 
-    const assessments = data.map((row: any) => ({
+    // Validate the Excel data structure
+    const validRows = data.filter(row => {
+      const isValid = row.Country && 
+                     row.Assessment && 
+                     typeof row.Assessment === 'string' &&
+                     row.Information;
+      
+      if (!isValid) {
+        console.error('Invalid row:', row);
+      }
+      return isValid;
+    });
+
+    if (validRows.length === 0) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid Excel format', 
+          details: 'Excel file must contain columns: Country, Assessment, and Information' 
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
+
+    const assessments = validRows.map((row: any) => ({
       country: row.Country,
       assessment: row.Assessment.toLowerCase(),
       information: row.Information,
@@ -46,6 +69,7 @@ serve(async (req) => {
       .insert(assessments)
 
     if (error) {
+      console.error('Database error:', error);
       return new Response(
         JSON.stringify({ error: 'Failed to insert assessments', details: error }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
@@ -53,10 +77,14 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ message: 'Assessments uploaded successfully' }),
+      JSON.stringify({ 
+        message: 'Assessments uploaded successfully',
+        count: assessments.length 
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     )
   } catch (error) {
+    console.error('Process excel error:', error);
     return new Response(
       JSON.stringify({ error: 'An unexpected error occurred', details: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
