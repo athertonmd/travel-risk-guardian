@@ -58,26 +58,20 @@ export const updateCountryColors = (map: mapboxgl.Map, assessments: RiskAssessme
     countryRiskLevels[assessment.country.toUpperCase()] = assessment.assessment;
   });
 
-  // Set a filter and color expression for the fill layer
-  const fillColor = [
-    'case',
-    ['in', ['get', 'name_en'], ['literal', Object.keys(countryRiskLevels)]],
-    [
-      'match',
-      ['get', 'name_en'],
-      ...Object.entries(countryRiskLevels).flatMap(([country, risk]) => [
-        country,
-        risk === 'extreme' ? '#ef4444' :
-        risk === 'high' ? '#f97316' :
-        risk === 'medium' ? '#eab308' :
-        '#22c55e' // low risk
-      ]),
-      '#cccccc' // default color for countries without assessment
-    ],
-    '#cccccc' // default color for countries without assessment
+  const matchExpression: mapboxgl.Expression = [
+    'match',
+    ['get', 'name_en'],
+    ...Object.entries(countryRiskLevels).flatMap(([country, risk]) => [
+      country,
+      risk === 'extreme' ? '#ef4444' :
+      risk === 'high' ? '#f97316' :
+      risk === 'medium' ? '#eab308' :
+      '#22c55e'
+    ]),
+    '#cccccc'
   ];
 
-  map.setPaintProperty('country-fills', 'fill-color', fillColor);
+  map.setPaintProperty('country-fills', 'fill-color', matchExpression);
   map.setPaintProperty('country-fills', 'fill-opacity', 0.6);
 };
 
