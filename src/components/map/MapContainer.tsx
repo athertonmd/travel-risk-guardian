@@ -32,7 +32,7 @@ export const MapContainer: React.FC<MapContainerProps> = ({
   }
 
   return (
-    <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg">
+    <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg [&:fullscreen]:h-screen [&:-webkit-full-screen]:h-screen">
       {children}
     </div>
   );
