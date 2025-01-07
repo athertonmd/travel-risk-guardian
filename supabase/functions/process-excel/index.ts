@@ -7,6 +7,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const validRiskLevels = ['low', 'medium', 'high', 'extreme'];
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -34,8 +36,9 @@ serve(async (req) => {
     const worksheet = workbook.Sheets[workbook.SheetNames[0]]
     const data = XLSX.utils.sheet_to_json(worksheet)
 
-    // Validate the Excel data structure
+    // Validate and sanitize the Excel data structure
     const validRows = data.filter(row => {
+      // Basic validation
       const isValid = row.Country && 
                      row.Assessment && 
                      typeof row.Assessment === 'string' &&
@@ -57,12 +60,22 @@ serve(async (req) => {
       )
     }
 
-    const assessments = validRows.map((row: any) => ({
-      country: row.Country,
-      assessment: row.Assessment.toLowerCase(),
-      information: row.Information,
-      amended_by: userId
-    }))
+    const assessments = validRows.map((row: any) => {
+      // Sanitize the assessment value: trim spaces and convert to lowercase
+      const sanitizedAssessment = row.Assessment.toString().toLowerCase().trim();
+      
+      // Validate that the assessment is a valid risk level
+      if (!validRiskLevels.includes(sanitizedAssessment)) {
+        throw new Error(`Invalid risk level: ${sanitizedAssessment}. Must be one of: ${validRiskLevels.join(', ')}`);
+      }
+
+      return {
+        country: row.Country.trim(),
+        assessment: sanitizedAssessment,
+        information: row.Information.trim(),
+        amended_by: userId
+      };
+    });
 
     const { error } = await supabase
       .from('risk_assessments')

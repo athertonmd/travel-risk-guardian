@@ -7,10 +7,10 @@ export const DownloadTemplateButton = () => {
     // Create workbook and worksheet
     const wb = XLSX.utils.book_new();
     
-    // Sample data with headers
+    // Sample data with headers and correct enum value (lowercase)
     const wsData = [
       ['Country', 'Assessment', 'Information'],
-      ['Sample Country', 'HIGH', 'Sample information about the risk assessment']
+      ['Sample Country', 'high', 'Sample information about the risk assessment']
     ];
     
     // Create worksheet from data
