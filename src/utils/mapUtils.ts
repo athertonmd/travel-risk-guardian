@@ -11,8 +11,8 @@ export const initializeMap = (
     container,
     style: 'mapbox://styles/mapbox/light-v11',
     projection: 'globe',
-    zoom: 1.5,
-    center: [0, 20],
+    zoom: 2.5,
+    center: [15, 50], // Centered on Europe
     pitch: 45,
   });
 };
@@ -55,12 +55,14 @@ export const updateCountryColors = (map: mapboxgl.Map, assessments: RiskAssessme
   // Create a lookup object for quick access to country risk levels
   const countryRiskLevels: { [key: string]: string } = {};
   assessments.forEach(assessment => {
-    countryRiskLevels[assessment.country.toUpperCase()] = assessment.assessment;
+    // Convert country names to match Mapbox's format
+    const countryName = assessment.country.toUpperCase();
+    countryRiskLevels[countryName] = assessment.assessment;
   });
 
   const matchExpression: mapboxgl.Expression = [
     'match',
-    ['get', 'name_en'],
+    ['upcase', ['get', 'name_en']], // Convert Mapbox country names to uppercase
     ...Object.entries(countryRiskLevels).flatMap(([country, risk]) => [
       country,
       risk === 'extreme' ? '#ef4444' :
