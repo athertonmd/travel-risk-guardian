@@ -33,6 +33,36 @@ export type Database = {
         }
         Relationships: []
       }
+      risk_assessments: {
+        Row: {
+          amended_by: string
+          assessment: Database["public"]["Enums"]["risk_level"]
+          country: string
+          created_at: string
+          id: string
+          information: string
+          updated_at: string
+        }
+        Insert: {
+          amended_by: string
+          assessment: Database["public"]["Enums"]["risk_level"]
+          country: string
+          created_at?: string
+          id?: string
+          information: string
+          updated_at?: string
+        }
+        Update: {
+          amended_by?: string
+          assessment?: Database["public"]["Enums"]["risk_level"]
+          country?: string
+          created_at?: string
+          id?: string
+          information?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -41,6 +71,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      risk_level: "low" | "medium" | "high" | "extreme"
       user_role: "user" | "admin"
     }
     CompositeTypes: {
