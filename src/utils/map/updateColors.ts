@@ -13,10 +13,19 @@ export const updateCountryColors = (map: mapboxgl.Map, assessments: RiskAssessme
   });
 
   // Create the paint expression with uppercase country names
+  const entries = Object.entries(countryRiskLevels);
+  if (entries.length === 0) {
+    // If no assessments, use a simple expression with default color
+    map.setPaintProperty('country-fills', 'fill-color', '#cccccc');
+    map.setPaintProperty('country-fills', 'fill-opacity', 0.6);
+    return;
+  }
+
+  // Create the match expression with all required arguments
   const paintExpression: mapboxgl.Expression = [
     'match',
-    ['upcase', ['get', 'name_en']], // Convert Mapbox country names to uppercase
-    ...Object.entries(countryRiskLevels).flatMap(([country, risk]) => [
+    ['upcase', ['get', 'name_en']],
+    ...entries.flatMap(([country, risk]) => [
       country,
       risk === 'extreme' ? '#ef4444' :
       risk === 'high' ? '#f97316' :
