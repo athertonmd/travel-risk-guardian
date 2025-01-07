@@ -1,6 +1,6 @@
 import mapboxgl from 'mapbox-gl';
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { CountryPopup } from '@/components/map/CountryPopup';
 import { RiskAssessment } from '@/components/dashboard/RiskMap';
 
@@ -8,6 +8,7 @@ export const setupMapInteractions = (map: mapboxgl.Map, assessments: RiskAssessm
   // Create a container for the popup
   const popupContainer = document.createElement('div');
   let currentPopup: mapboxgl.Popup | null = null;
+  let root: ReturnType<typeof createRoot> | null = null;
 
   map.on('mousemove', 'country-fills', (e) => {
     if (e.features && e.features.length > 0) {
@@ -23,6 +24,7 @@ export const setupMapInteractions = (map: mapboxgl.Map, assessments: RiskAssessm
       if (assessment) {
         // Remove existing popup if any
         if (currentPopup) {
+          root?.unmount();
           currentPopup.remove();
         }
 
@@ -35,13 +37,13 @@ export const setupMapInteractions = (map: mapboxgl.Map, assessments: RiskAssessm
           .setLngLat(e.lngLat)
           .setDOMContent(popupContainer);
 
-        // Render React component into popup
-        ReactDOM.render(
+        // Create new root and render React component
+        root = createRoot(popupContainer);
+        root.render(
           React.createElement(CountryPopup, {
             assessment,
             triggerElement: React.createElement('div')
-          }),
-          popupContainer
+          })
         );
 
         currentPopup.addTo(map);
@@ -52,8 +54,10 @@ export const setupMapInteractions = (map: mapboxgl.Map, assessments: RiskAssessm
   map.on('mouseleave', 'country-fills', () => {
     map.getCanvas().style.cursor = '';
     if (currentPopup) {
+      root?.unmount();
       currentPopup.remove();
       currentPopup = null;
+      root = null;
     }
   });
 };
