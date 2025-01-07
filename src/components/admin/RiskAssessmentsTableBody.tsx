@@ -22,12 +22,14 @@ interface RiskAssessmentsTableBodyProps {
   assessments: RiskAssessment[] | undefined;
   isLoading: boolean;
   onDelete: (assessment: RiskAssessment) => void;
+  onEdit: (assessment: RiskAssessment) => void;
 }
 
 export const RiskAssessmentsTableBody = ({
   assessments,
   isLoading,
   onDelete,
+  onEdit,
 }: RiskAssessmentsTableBodyProps) => {
   if (isLoading) {
     return (
@@ -66,6 +68,7 @@ export const RiskAssessmentsTableBody = ({
           <TableCell className="text-right">
             <TableActionButtons
               onDelete={() => onDelete(assessment)}
+              onEdit={() => onEdit(assessment)}
             />
           </TableCell>
         </TableRow>

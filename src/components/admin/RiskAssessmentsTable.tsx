@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AddRiskAssessmentDialog } from "./AddRiskAssessmentDialog";
 import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
+import { EditRiskAssessmentDialog } from "./EditRiskAssessmentDialog";
 import { RiskAssessmentsTableBody } from "./RiskAssessmentsTableBody";
 
 interface RiskAssessment {
@@ -31,6 +32,7 @@ interface RiskAssessmentsTableProps {
 
 export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessmentsTableProps) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedAssessment, setSelectedAssessment] = useState<RiskAssessment | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -65,6 +67,11 @@ export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessments
     setDeleteDialogOpen(true);
   };
 
+  const handleEdit = (assessment: RiskAssessment) => {
+    setSelectedAssessment(assessment);
+    setEditDialogOpen(true);
+  };
+
   return (
     <>
       <div className="mb-4 flex items-center justify-between">
@@ -90,6 +97,7 @@ export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessments
             assessments={assessments}
             isLoading={isLoading}
             onDelete={confirmDelete}
+            onEdit={handleEdit}
           />
         </Table>
       </div>
@@ -99,6 +107,12 @@ export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessments
         onOpenChange={setDeleteDialogOpen}
         onConfirm={() => selectedAssessment && handleDelete(selectedAssessment)}
         countryName={selectedAssessment?.country}
+      />
+
+      <EditRiskAssessmentDialog
+        assessment={selectedAssessment}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
       />
     </>
   );

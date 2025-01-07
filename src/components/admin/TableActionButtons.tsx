@@ -1,25 +1,18 @@
 import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
 
 interface TableActionButtonsProps {
   onDelete: () => void;
+  onEdit: () => void;
 }
 
-export const TableActionButtons = ({ onDelete }: TableActionButtonsProps) => {
-  const { toast } = useToast();
-
+export const TableActionButtons = ({ onDelete, onEdit }: TableActionButtonsProps) => {
   return (
     <div className="flex justify-end gap-2">
       <Button
         variant="ghost"
         size="icon"
-        onClick={() => {
-          toast({
-            title: "Coming Soon",
-            description: "Edit functionality will be available soon",
-          });
-        }}
+        onClick={onEdit}
         className="h-8 w-8 p-0"
       >
         <Pencil className="h-4 w-4 text-muted-foreground hover:text-foreground" />
