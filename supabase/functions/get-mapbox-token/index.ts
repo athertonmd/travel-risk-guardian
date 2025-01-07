@@ -9,8 +9,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log('Function invoked with method:', req.method)
-  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, {
@@ -22,12 +20,11 @@ serve(async (req) => {
   try {
     // Get the authorization header
     const authHeader = req.headers.get('Authorization')
-    console.log('Auth header:', authHeader ? 'Present' : 'Missing')
-
-    if (!authHeader?.startsWith('Bearer ')) {
-      console.error('Invalid or missing authorization header')
+    
+    if (!authHeader) {
+      console.error('No authorization header provided')
       return new Response(
-        JSON.stringify({ error: 'Invalid or missing authorization header' }),
+        JSON.stringify({ error: 'No authorization header provided' }),
         { 
           status: 401,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -49,24 +46,24 @@ serve(async (req) => {
     // Get the session of the logged in user
     const {
       data: { session },
+      error: sessionError,
     } = await supabaseClient.auth.getSession()
 
-    console.log('Session check result:', session ? 'Session found' : 'No session')
-
-    if (!session) {
+    if (sessionError || !session) {
+      console.error('Session error:', sessionError || 'No session found')
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'Unauthorized - Invalid session' }),
         { 
-          status: 401, 
+          status: 401,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
     }
 
     const token = Deno.env.get('MAPBOX_TOKEN')
-    console.log('Mapbox token retrieved:', token ? 'Token found' : 'No token found')
-
+    
     if (!token) {
+      console.error('MAPBOX_TOKEN not found in environment')
       return new Response(
         JSON.stringify({ error: 'Mapbox token not configured' }),
         { 
@@ -80,6 +77,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ token }),
       { 
+        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       },
     )
@@ -88,7 +86,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
-        status: 500, 
+        status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
