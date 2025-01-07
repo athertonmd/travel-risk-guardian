@@ -41,8 +41,6 @@ export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessments
   const { 
     searchTerm, 
     setSearchTerm, 
-    assessmentFilter, 
-    setAssessmentFilter, 
     filteredAssessments 
   } = useRiskAssessmentFilters(assessments);
 
@@ -88,8 +86,6 @@ export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessments
       <RiskAssessmentSearch
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        assessmentFilter={assessmentFilter}
-        onAssessmentFilterChange={setAssessmentFilter}
       />
 
       <div className="rounded-md border">
