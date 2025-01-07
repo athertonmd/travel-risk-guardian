@@ -45,6 +45,83 @@ const RiskMap = ({ assessments }: RiskMapProps) => {
         );
 
         map.current = mapInstance;
+
+        // Add color-coding when the map style is loaded
+        mapInstance.on('style.load', () => {
+          // Add a data source for countries
+          mapInstance.addSource('countries', {
+            type: 'vector',
+            url: 'mapbox://mapbox.country-boundaries-v1'
+          });
+
+          // Add a layer for country fills
+          mapInstance.addLayer({
+            id: 'country-fills',
+            type: 'fill',
+            source: 'countries',
+            'source-layer': 'country_boundaries',
+            paint: {
+              'fill-color': [
+                'case',
+                ['==', ['get', 'risk_level'], 'extreme'], '#ef4444', // red
+                ['==', ['get', 'risk_level'], 'high'], '#f97316', // orange
+                ['==', ['get', 'risk_level'], 'medium'], '#eab308', // yellow
+                ['==', ['get', 'risk_level'], 'low'], '#22c55e', // green
+                'rgba(0, 0, 0, 0)' // default transparent
+              ],
+              'fill-opacity': 0.5
+            }
+          });
+
+          // Add a layer for country borders
+          mapInstance.addLayer({
+            id: 'country-borders',
+            type: 'line',
+            source: 'countries',
+            'source-layer': 'country_boundaries',
+            paint: {
+              'line-color': '#ffffff',
+              'line-width': 1
+            }
+          });
+
+          // Update country colors based on risk assessments
+          const setCountryColors = () => {
+            const countryFeatures = assessments.map(assessment => ({
+              type: 'Feature',
+              properties: {
+                risk_level: assessment.assessment,
+                name: assessment.country
+              },
+              geometry: null
+            }));
+
+            if (mapInstance.getSource('risk-data')) {
+              (mapInstance.getSource('risk-data') as mapboxgl.GeoJSONSource).setData({
+                type: 'FeatureCollection',
+                features: countryFeatures
+              });
+            }
+          };
+
+          setCountryColors();
+        });
+
+        // Add hover effect
+        mapInstance.on('mousemove', 'country-fills', (e) => {
+          if (e.features && e.features.length > 0) {
+            const feature = e.features[0];
+            const riskLevel = feature.properties.risk_level;
+            if (riskLevel) {
+              mapInstance.getCanvas().style.cursor = 'pointer';
+              // You could add a popup here if desired
+            }
+          }
+        });
+
+        mapInstance.on('mouseleave', 'country-fills', () => {
+          mapInstance.getCanvas().style.cursor = '';
+        });
       }
     } catch (error) {
       console.error('Error initializing map:', error);
@@ -57,7 +134,7 @@ const RiskMap = ({ assessments }: RiskMapProps) => {
         map.current = null;
       }
     };
-  }, [mapboxToken]);
+  }, [mapboxToken, assessments]);
 
   return (
     <MapContainer isLoading={isLoading} error={error}>
