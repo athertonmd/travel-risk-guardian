@@ -8,7 +8,7 @@ import {
   setupMapLayers, 
   updateCountryColors, 
   setupMapInteractions 
-} from '@/utils/mapUtils';
+} from '@/utils/map';
 
 export interface RiskAssessment {
   country: string;
