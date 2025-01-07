@@ -50,19 +50,23 @@ export const setupMapLayers = (map: mapboxgl.Map) => {
 };
 
 export const updateCountryColors = (map: mapboxgl.Map, assessments: RiskAssessment[]) => {
-  if (!map.isStyleLoaded()) return;
+  if (!map.isStyleLoaded()) {
+    console.log('Map style not loaded yet');
+    return;
+  }
 
   // Create a lookup object for quick access to country risk levels
   const countryRiskLevels: { [key: string]: string } = {};
   assessments.forEach(assessment => {
-    // Convert country names to match Mapbox's format
     const countryName = assessment.country.toUpperCase();
     countryRiskLevels[countryName] = assessment.assessment;
+    console.log(`Added country: ${countryName} with risk level: ${assessment.assessment}`);
   });
 
+  // Create the match expression for Mapbox
   const matchExpression: mapboxgl.Expression = [
     'match',
-    ['upcase', ['get', 'name_en']], // Convert Mapbox country names to uppercase
+    ['upcase', ['get', 'name_en']],
     ...Object.entries(countryRiskLevels).flatMap(([country, risk]) => [
       country,
       risk === 'extreme' ? '#ef4444' :
@@ -70,9 +74,12 @@ export const updateCountryColors = (map: mapboxgl.Map, assessments: RiskAssessme
       risk === 'medium' ? '#eab308' :
       '#22c55e'
     ]),
-    '#cccccc'
+    '#cccccc' // Default color for countries without assessment
   ];
 
+  console.log('Setting paint property with expression:', JSON.stringify(matchExpression));
+
+  // Update the layer's paint property
   map.setPaintProperty('country-fills', 'fill-color', matchExpression);
   map.setPaintProperty('country-fills', 'fill-opacity', 0.6);
 };
@@ -82,6 +89,10 @@ export const setupMapInteractions = (map: mapboxgl.Map) => {
   map.on('mousemove', 'country-fills', (e) => {
     if (e.features && e.features.length > 0) {
       map.getCanvas().style.cursor = 'pointer';
+      
+      // Log the country name and its current color
+      const feature = e.features[0];
+      console.log('Hovering over country:', feature.properties.name_en);
     }
   });
 
