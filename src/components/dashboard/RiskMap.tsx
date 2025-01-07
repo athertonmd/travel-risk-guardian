@@ -31,8 +31,8 @@ const RiskMap = ({ assessments }: RiskMapProps) => {
           container: mapContainer.current,
           style: 'mapbox://styles/mapbox/light-v11',
           projection: 'globe',
-          zoom: 1.5,
-          center: [30, 15],
+          zoom: 3.5, // Increased zoom level for better view of Europe
+          center: [15, 50], // Centered on Europe (approximately central Europe)
           pitch: 45,
         });
 
