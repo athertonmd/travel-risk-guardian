@@ -26,16 +26,32 @@ const RiskMap = ({ assessments }: RiskMapProps) => {
     const fetchMapboxToken = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          const { data, error } = await supabase.functions.invoke('get-mapbox-token');
-          if (!error && data?.token) {
-            setMapboxToken(data.token);
-            setIsLoading(false);
-          } else {
-            console.error('Error fetching Mapbox token:', error);
-            setError('Failed to load map configuration');
-            setIsLoading(false);
+        
+        if (!session) {
+          setError('You must be logged in to view the map');
+          setIsLoading(false);
+          return;
+        }
+
+        const { data, error: functionError } = await supabase.functions.invoke('get-mapbox-token', {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`
           }
+        });
+
+        if (functionError) {
+          console.error('Error fetching Mapbox token:', functionError);
+          setError('Failed to load map configuration');
+          setIsLoading(false);
+          return;
+        }
+
+        if (data?.token) {
+          setMapboxToken(data.token);
+          setIsLoading(false);
+        } else {
+          setError('No map configuration found');
+          setIsLoading(false);
         }
       } catch (err) {
         console.error('Error:', err);
