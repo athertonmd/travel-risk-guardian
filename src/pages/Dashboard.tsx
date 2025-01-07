@@ -66,7 +66,10 @@ const Dashboard = () => {
         />
 
         <div className="mb-8">
-          <RiskMap assessments={filteredAssessments} />
+          <RiskMap 
+            assessments={filteredAssessments} 
+            searchTerm={searchTerm}
+          />
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
