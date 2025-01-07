@@ -35,7 +35,7 @@ export const RiskAssessmentSearch = ({
           <SelectValue placeholder="Filter by assessment" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">All assessments</SelectItem>
+          <SelectItem value="all">All assessments</SelectItem>
           <SelectItem value="low">Low</SelectItem>
           <SelectItem value="medium">Medium</SelectItem>
           <SelectItem value="high">High</SelectItem>

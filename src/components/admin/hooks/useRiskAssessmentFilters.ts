@@ -14,12 +14,12 @@ interface RiskAssessment {
 
 export const useRiskAssessmentFilters = (assessments: RiskAssessment[] | undefined) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [assessmentFilter, setAssessmentFilter] = useState("");
+  const [assessmentFilter, setAssessmentFilter] = useState("all");
 
   const filteredAssessments = useMemo(() => {
     return assessments?.filter((assessment) => {
       const matchesSearch = assessment.country.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesAssessment = !assessmentFilter || assessment.assessment === assessmentFilter;
+      const matchesAssessment = assessmentFilter === "all" || assessment.assessment === assessmentFilter;
       return matchesSearch && matchesAssessment;
     });
   }, [assessments, searchTerm, assessmentFilter]);
