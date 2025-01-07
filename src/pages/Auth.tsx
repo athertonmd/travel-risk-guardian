@@ -62,7 +62,7 @@ const Auth = () => {
       
       {/* Content */}
       <div className="flex-1 flex items-center justify-center relative z-10">
-        <div className="container max-w-md mx-auto px-4">
+        <div className="w-full max-w-md mx-auto px-6">
           <div className="backdrop-blur-sm bg-white/90 p-8 rounded-xl shadow-2xl">
             <div>
               <h1 className="text-center text-3xl font-bold text-gray-900">
