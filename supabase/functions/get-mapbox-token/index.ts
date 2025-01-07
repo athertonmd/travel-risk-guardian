@@ -4,12 +4,19 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
 }
 
 serve(async (req) => {
+  console.log('Function invoked with method:', req.method)
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders
+    })
   }
 
   try {
@@ -29,6 +36,8 @@ serve(async (req) => {
       data: { session },
     } = await supabaseClient.auth.getSession()
 
+    console.log('Session check result:', session ? 'Session found' : 'No session')
+
     if (!session) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
@@ -39,16 +48,20 @@ serve(async (req) => {
       )
     }
 
+    const token = Deno.env.get('MAPBOX_TOKEN')
+    console.log('Mapbox token retrieved:', token ? 'Token found' : 'No token found')
+
     // Return the Mapbox token
     return new Response(
       JSON.stringify({ 
-        token: Deno.env.get('MAPBOX_TOKEN')
+        token: token
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       },
     )
   } catch (error) {
+    console.error('Error in get-mapbox-token:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
