@@ -47,7 +47,7 @@ const Admin = () => {
         .from('risk_assessments')
         .select(`
           *,
-          profiles:amended_by (
+          profiles (
             email
           )
         `)
