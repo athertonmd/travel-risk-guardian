@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Upload } from "lucide-react";
+import { Upload, AlertCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface FileUploadDialogProps {
   showDialog: boolean;
@@ -68,6 +69,19 @@ export const FileUploadDialog = ({ showDialog, onOpenChange }: FileUploadDialogP
             Select an Excel file or drag and drop it here to upload your risk assessments.
           </AlertDialogDescription>
         </AlertDialogHeader>
+
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Your Excel file must contain the following columns:
+            <ul className="list-disc list-inside mt-2">
+              <li>Country</li>
+              <li>Assessment</li>
+              <li>Information</li>
+            </ul>
+          </AlertDescription>
+        </Alert>
+
         <div className="my-4 p-8 border-2 border-dashed rounded-lg text-center">
           <Input
             type="file"
