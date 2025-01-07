@@ -20,13 +20,26 @@ serve(async (req) => {
   }
 
   try {
+    // Get the authorization header
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      console.error('No authorization header found')
+      return new Response(
+        JSON.stringify({ error: 'No authorization header' }),
+        { 
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
     // Create a Supabase client with the Auth context of the logged in user
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
+          headers: { Authorization: authHeader },
         },
       }
     )
@@ -51,11 +64,19 @@ serve(async (req) => {
     const token = Deno.env.get('MAPBOX_TOKEN')
     console.log('Mapbox token retrieved:', token ? 'Token found' : 'No token found')
 
+    if (!token) {
+      return new Response(
+        JSON.stringify({ error: 'Mapbox token not configured' }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+
     // Return the Mapbox token
     return new Response(
-      JSON.stringify({ 
-        token: token
-      }),
+      JSON.stringify({ token }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       },
