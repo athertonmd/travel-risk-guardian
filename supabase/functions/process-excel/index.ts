@@ -37,52 +37,54 @@ serve(async (req) => {
     const data = XLSX.utils.sheet_to_json(worksheet)
 
     // Validate and sanitize the Excel data structure
-    const validRows = data.filter(row => {
-      // Basic validation
-      const isValid = row.Country && 
-                     row.Assessment && 
-                     typeof row.Assessment === 'string' &&
-                     row.Information;
-      
-      if (!isValid) {
-        console.error('Invalid row:', row);
+    const validRows = []
+    const errors = []
+
+    for (const row of data) {
+      try {
+        // Basic validation
+        if (!row.Country || !row.Assessment || !row.Information) {
+          errors.push(`Invalid row: missing required fields`)
+          continue
+        }
+
+        // Sanitize the assessment value
+        const sanitizedAssessment = row.Assessment.toString().toLowerCase().trim()
+        
+        // Validate risk level
+        if (!validRiskLevels.includes(sanitizedAssessment)) {
+          errors.push(`Invalid risk level: "${sanitizedAssessment}". Must be one of: ${validRiskLevels.join(', ')}`)
+          continue
+        }
+
+        validRows.push({
+          country: row.Country.toString().trim(),
+          assessment: sanitizedAssessment,
+          information: row.Information.toString().trim(),
+          amended_by: userId
+        })
+      } catch (error) {
+        console.error('Row processing error:', error)
+        errors.push(`Failed to process row: ${error.message}`)
       }
-      return isValid;
-    });
+    }
 
     if (validRows.length === 0) {
       return new Response(
         JSON.stringify({ 
-          error: 'Invalid Excel format', 
-          details: 'Excel file must contain columns: Country, Assessment, and Information' 
+          error: 'No valid rows found in Excel file', 
+          details: errors.join('; ')
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       )
     }
 
-    const assessments = validRows.map((row: any) => {
-      // Sanitize the assessment value: trim spaces and convert to lowercase
-      const sanitizedAssessment = row.Assessment.toString().toLowerCase().trim();
-      
-      // Validate that the assessment is a valid risk level
-      if (!validRiskLevels.includes(sanitizedAssessment)) {
-        throw new Error(`Invalid risk level: ${sanitizedAssessment}. Must be one of: ${validRiskLevels.join(', ')}`);
-      }
-
-      return {
-        country: row.Country.trim(),
-        assessment: sanitizedAssessment,
-        information: row.Information.trim(),
-        amended_by: userId
-      };
-    });
-
     const { error } = await supabase
       .from('risk_assessments')
-      .insert(assessments)
+      .insert(validRows)
 
     if (error) {
-      console.error('Database error:', error);
+      console.error('Database error:', error)
       return new Response(
         JSON.stringify({ error: 'Failed to insert assessments', details: error }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
@@ -92,12 +94,13 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         message: 'Assessments uploaded successfully',
-        count: assessments.length 
+        count: validRows.length,
+        errors: errors.length > 0 ? errors : undefined
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     )
   } catch (error) {
-    console.error('Process excel error:', error);
+    console.error('Process excel error:', error)
     return new Response(
       JSON.stringify({ error: 'An unexpected error occurred', details: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
