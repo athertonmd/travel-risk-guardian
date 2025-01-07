@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Upload, AlertCircle, Download } from "lucide-react";
+import { Upload, AlertCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { DownloadTemplateButton } from "./DownloadTemplateButton";
 
 interface FileUploadDialogProps {
   showDialog: boolean;
@@ -60,15 +61,6 @@ export const FileUploadDialog = ({ showDialog, onOpenChange }: FileUploadDialogP
     }
   };
 
-  const downloadTemplate = () => {
-    const link = document.createElement('a');
-    link.href = '/template.xlsx';
-    link.download = 'risk-assessment-template.xlsx';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   return (
     <AlertDialog open={showDialog} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -88,15 +80,9 @@ export const FileUploadDialog = ({ showDialog, onOpenChange }: FileUploadDialogP
               <li>Assessment</li>
               <li>Information</li>
             </ul>
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-2"
-              onClick={downloadTemplate}
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Download Template
-            </Button>
+            <div className="mt-2">
+              <DownloadTemplateButton />
+            </div>
           </AlertDescription>
         </Alert>
 
