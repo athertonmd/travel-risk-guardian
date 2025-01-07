@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -51,12 +51,24 @@ export const EditRiskAssessmentDialog = ({
   
   const form = useForm<RiskAssessment>({
     defaultValues: {
-      id: assessment?.id || "",
-      country: assessment?.country || "",
-      assessment: assessment?.assessment || "low",
-      information: assessment?.information || "",
+      id: "",
+      country: "",
+      assessment: "low",
+      information: "",
     },
   });
+
+  // Reset form with assessment data when dialog opens
+  useEffect(() => {
+    if (assessment && open) {
+      form.reset({
+        id: assessment.id,
+        country: assessment.country,
+        assessment: assessment.assessment,
+        information: assessment.information,
+      });
+    }
+  }, [assessment, open, form]);
 
   const onSubmit = async (values: RiskAssessment) => {
     try {

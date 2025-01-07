@@ -16,7 +16,7 @@ import { RiskAssessmentsTableBody } from "./RiskAssessmentsTableBody";
 interface RiskAssessment {
   id: string;
   country: string;
-  assessment: string;
+  assessment: "low" | "medium" | "high" | "extreme";
   information: string;
   created_at: string;
   updated_at: string;
