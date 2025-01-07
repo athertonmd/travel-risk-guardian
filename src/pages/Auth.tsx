@@ -48,7 +48,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col relative">
+    <div className="min-h-screen flex flex-col">
       {/* Background Image */}
       <div 
         className="absolute inset-0 z-0"
