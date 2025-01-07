@@ -41,10 +41,19 @@ const RiskMap = ({ assessments }: RiskMapProps) => {
 
         map.current = mapInstance;
 
+        // Wait for both style and source to load
         mapInstance.on('style.load', () => {
+          console.log('Style loaded, setting up layers...');
           setupMapLayers(mapInstance);
-          updateCountryColors(mapInstance, assessments);
-          setupMapInteractions(mapInstance);
+          
+          // Wait for the source to be loaded before updating colors
+          mapInstance.once('sourcedata', (e) => {
+            if (e.isSourceLoaded) {
+              console.log('Source loaded, updating colors...');
+              updateCountryColors(mapInstance, assessments);
+              setupMapInteractions(mapInstance);
+            }
+          });
         });
       }
     } catch (error) {

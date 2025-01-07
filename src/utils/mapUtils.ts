@@ -50,23 +50,20 @@ export const setupMapLayers = (map: mapboxgl.Map) => {
 };
 
 export const updateCountryColors = (map: mapboxgl.Map, assessments: RiskAssessment[]) => {
-  if (!map.isStyleLoaded()) {
-    console.log('Map style not loaded yet');
-    return;
-  }
+  console.log('Updating country colors with assessments:', assessments);
 
   // Create a lookup object for quick access to country risk levels
   const countryRiskLevels: { [key: string]: string } = {};
   assessments.forEach(assessment => {
     const countryName = assessment.country.toUpperCase();
     countryRiskLevels[countryName] = assessment.assessment;
-    console.log(`Added country: ${countryName} with risk level: ${assessment.assessment}`);
+    console.log(`Processing country: ${countryName} with risk level: ${assessment.assessment}`);
   });
 
-  // Create the match expression for Mapbox
-  const matchExpression: mapboxgl.Expression = [
+  // Create the paint expression
+  const paintExpression: mapboxgl.Expression = [
     'match',
-    ['upcase', ['get', 'name_en']],
+    ['get', 'name_en'],
     ...Object.entries(countryRiskLevels).flatMap(([country, risk]) => [
       country,
       risk === 'extreme' ? '#ef4444' :
@@ -77,22 +74,25 @@ export const updateCountryColors = (map: mapboxgl.Map, assessments: RiskAssessme
     '#cccccc' // Default color for countries without assessment
   ];
 
-  console.log('Setting paint property with expression:', JSON.stringify(matchExpression));
+  console.log('Applying paint expression:', JSON.stringify(paintExpression));
 
-  // Update the layer's paint property
-  map.setPaintProperty('country-fills', 'fill-color', matchExpression);
-  map.setPaintProperty('country-fills', 'fill-opacity', 0.6);
+  try {
+    map.setPaintProperty('country-fills', 'fill-color', paintExpression);
+    map.setPaintProperty('country-fills', 'fill-opacity', 0.6);
+    console.log('Successfully applied paint properties');
+  } catch (error) {
+    console.error('Error applying paint properties:', error);
+  }
 };
 
 export const setupMapInteractions = (map: mapboxgl.Map) => {
-  // Add hover effect
   map.on('mousemove', 'country-fills', (e) => {
     if (e.features && e.features.length > 0) {
       map.getCanvas().style.cursor = 'pointer';
-      
-      // Log the country name and its current color
       const feature = e.features[0];
-      console.log('Hovering over country:', feature.properties.name_en);
+      const countryName = feature.properties.name_en;
+      const color = map.getPaintProperty('country-fills', 'fill-color');
+      console.log('Hovering over country:', countryName, 'Current color expression:', color);
     }
   });
 
