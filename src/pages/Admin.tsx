@@ -1,33 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { format } from "date-fns";
-import { Upload, ArrowLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { useToast } from "@/components/ui/use-toast";
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogCancel,
-} from "@/components/ui/alert-dialog";
+import { AdminHeader } from "@/components/admin/AdminHeader";
+import { FileUploadDialog } from "@/components/admin/FileUploadDialog";
+import { RiskAssessmentsTable } from "@/components/admin/RiskAssessmentsTable";
 
 const Admin = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
 
@@ -68,138 +48,23 @@ const Admin = () => {
     },
   });
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    try {
-      setUploading(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('No session');
-
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('userId', session.user.id);
-
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-excel`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-          body: formData,
-        }
-      );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error);
-      }
-
-      toast({
-        title: "Success",
-        description: "Risk assessments uploaded successfully",
-      });
-      setShowUploadDialog(false);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setUploading(false);
-    }
-  };
-
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/dashboard')}
-          className="gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Dashboard
-        </Button>
-        <div className="flex items-center gap-4">
-          <Button 
-            onClick={() => setShowUploadDialog(true)} 
-            disabled={uploading}
-          >
-            <Upload className="h-4 w-4 mr-2" />
-            {uploading ? "Uploading..." : "Upload Excel"}
-          </Button>
-        </div>
-      </div>
+      <AdminHeader
+        onBackClick={() => navigate('/dashboard')}
+        onUploadClick={() => setShowUploadDialog(true)}
+        uploading={uploading}
+      />
 
-      <AlertDialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Upload Excel File</AlertDialogTitle>
-            <AlertDialogDescription>
-              Select an Excel file or drag and drop it here to upload your risk assessments.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="my-4 p-8 border-2 border-dashed rounded-lg text-center">
-            <Input
-              type="file"
-              accept=".xlsx,.xls"
-              onChange={handleFileUpload}
-              disabled={uploading}
-              className="mx-auto"
-            />
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <FileUploadDialog
+        showDialog={showUploadDialog}
+        onOpenChange={setShowUploadDialog}
+      />
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Country</TableHead>
-              <TableHead>Assessment</TableHead>
-              <TableHead>Information</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Update Date</TableHead>
-              <TableHead>Amended by</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center">
-                  Loading...
-                </TableCell>
-              </TableRow>
-            ) : assessments?.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center">
-                  No risk assessments found
-                </TableCell>
-              </TableRow>
-            ) : (
-              assessments?.map((assessment) => (
-                <TableRow key={assessment.id}>
-                  <TableCell>{assessment.country}</TableCell>
-                  <TableCell className="capitalize">{assessment.assessment}</TableCell>
-                  <TableCell>{assessment.information}</TableCell>
-                  <TableCell>{format(new Date(assessment.created_at), "PPp")}</TableCell>
-                  <TableCell>{format(new Date(assessment.updated_at), "PPp")}</TableCell>
-                  <TableCell>{assessment.profiles?.email}</TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <RiskAssessmentsTable
+        assessments={assessments}
+        isLoading={isLoading}
+      />
     </div>
   );
 };
