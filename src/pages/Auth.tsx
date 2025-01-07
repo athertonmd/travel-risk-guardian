@@ -61,8 +61,8 @@ const Auth = () => {
       />
       
       {/* Content */}
-      <div className="flex-1 flex items-center justify-center relative z-10 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8 backdrop-blur-sm bg-white/90 p-8 rounded-xl shadow-2xl">
+      <div className="flex-1 flex items-center justify-center relative z-10">
+        <div className="max-w-md w-full space-y-8 backdrop-blur-sm bg-white/90 p-8 rounded-xl shadow-2xl mx-auto">
           <div>
             <h1 className="text-center text-3xl font-bold text-gray-900">
               Travel Risk Guardian
