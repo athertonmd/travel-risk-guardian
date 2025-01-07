@@ -19,31 +19,47 @@ const RiskMap = ({ assessments }: RiskMapProps) => {
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    // Initialize map
-    mapboxgl.accessToken = 'YOUR_MAPBOX_TOKEN'; // This should be fetched from Supabase Edge Function secrets
-    
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/light-v11',
-      projection: 'globe',
-      zoom: 1.5,
-      center: [30, 15],
-      pitch: 45,
-    });
+    try {
+      // Initialize map only if not already initialized
+      if (!map.current) {
+        mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || '';
+        
+        if (!mapboxgl.accessToken) {
+          console.error('Mapbox token not found');
+          return;
+        }
 
-    // Add navigation controls
-    map.current.addControl(
-      new mapboxgl.NavigationControl({
-        visualizePitch: true,
-      }),
-      'top-right'
-    );
+        const mapInstance = new mapboxgl.Map({
+          container: mapContainer.current,
+          style: 'mapbox://styles/mapbox/light-v11',
+          projection: 'globe',
+          zoom: 1.5,
+          center: [30, 15],
+          pitch: 45,
+        });
 
-    // Cleanup
+        // Add navigation controls
+        mapInstance.addControl(
+          new mapboxgl.NavigationControl({
+            visualizePitch: true,
+          }),
+          'top-right'
+        );
+
+        map.current = mapInstance;
+      }
+    } catch (error) {
+      console.error('Error initializing map:', error);
+    }
+
+    // Cleanup function
     return () => {
-      map.current?.remove();
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
     };
-  }, []);
+  }, []); // Empty dependency array since we only want to initialize once
 
   return (
     <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg">
