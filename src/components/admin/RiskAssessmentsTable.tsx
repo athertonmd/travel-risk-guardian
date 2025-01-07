@@ -1,19 +1,16 @@
-import { format } from "date-fns";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Table,
-  TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { TableActionButtons } from "./TableActionButtons";
 import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
 import { DownloadTemplateButton } from "./DownloadTemplateButton";
+import { RiskAssessmentsTableBody } from "./RiskAssessmentsTableBody";
 
 interface RiskAssessment {
   id: string;
@@ -87,37 +84,11 @@ export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessments
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={7} className="text-center">
-                  Loading...
-                </TableCell>
-              </TableRow>
-            ) : assessments?.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="text-center">
-                  No risk assessments found
-                </TableCell>
-              </TableRow>
-            ) : (
-              assessments?.map((assessment) => (
-                <TableRow key={assessment.id}>
-                  <TableCell>{assessment.country}</TableCell>
-                  <TableCell className="capitalize">{assessment.assessment}</TableCell>
-                  <TableCell>{assessment.information}</TableCell>
-                  <TableCell>{format(new Date(assessment.created_at), "PPp")}</TableCell>
-                  <TableCell>{format(new Date(assessment.updated_at), "PPp")}</TableCell>
-                  <TableCell>{assessment.profiles?.email}</TableCell>
-                  <TableCell className="text-right">
-                    <TableActionButtons
-                      onDelete={() => confirmDelete(assessment)}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
+          <RiskAssessmentsTableBody
+            assessments={assessments}
+            isLoading={isLoading}
+            onDelete={confirmDelete}
+          />
         </Table>
       </div>
 
