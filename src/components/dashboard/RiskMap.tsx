@@ -31,14 +31,6 @@ const RiskMap = ({ assessments }: RiskMapProps) => {
     try {
       if (!map.current) {
         const mapInstance = initializeMap(mapContainer.current, mapboxToken);
-        
-        mapInstance.addControl(
-          new mapboxgl.NavigationControl({
-            visualizePitch: true,
-          }),
-          'top-right'
-        );
-
         map.current = mapInstance;
 
         mapInstance.on('style.load', () => {
