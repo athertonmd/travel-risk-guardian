@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { AddRiskAssessmentDialog } from "./AddRiskAssessmentDialog";
 import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
 import { DownloadTemplateButton } from "./DownloadTemplateButton";
 import { RiskAssessmentsTableBody } from "./RiskAssessmentsTableBody";
@@ -67,8 +68,11 @@ export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessments
 
   return (
     <>
-      <div className="mb-4">
-        <DownloadTemplateButton />
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex gap-2">
+          <DownloadTemplateButton />
+          <AddRiskAssessmentDialog />
+        </div>
       </div>
 
       <div className="rounded-md border">
