@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 interface RiskAssessment {
   country: string;
@@ -17,18 +18,29 @@ const RiskMap = ({ assessments }: RiskMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapboxToken, setMapboxToken] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch Mapbox token from Supabase
   useEffect(() => {
     const fetchMapboxToken = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const { data, error } = await supabase.functions.invoke('get-mapbox-token');
-        if (!error && data?.token) {
-          setMapboxToken(data.token);
-        } else {
-          console.error('Error fetching Mapbox token:', error);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          const { data, error } = await supabase.functions.invoke('get-mapbox-token');
+          if (!error && data?.token) {
+            setMapboxToken(data.token);
+            setIsLoading(false);
+          } else {
+            console.error('Error fetching Mapbox token:', error);
+            setError('Failed to load map configuration');
+            setIsLoading(false);
+          }
         }
+      } catch (err) {
+        console.error('Error:', err);
+        setError('An unexpected error occurred');
+        setIsLoading(false);
       }
     };
 
@@ -64,6 +76,7 @@ const RiskMap = ({ assessments }: RiskMapProps) => {
       }
     } catch (error) {
       console.error('Error initializing map:', error);
+      setError('Failed to initialize map');
     }
 
     // Cleanup function
@@ -73,7 +86,26 @@ const RiskMap = ({ assessments }: RiskMapProps) => {
         map.current = null;
       }
     };
-  }, [mapboxToken]); // Dependency on mapboxToken ensures map initializes after token is fetched
+  }, [mapboxToken]);
+
+  if (isLoading) {
+    return (
+      <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg bg-gray-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg bg-gray-50 flex items-center justify-center">
+        <div className="text-red-500 text-center">
+          <p>{error}</p>
+          <p className="text-sm text-gray-500 mt-2">Please try refreshing the page</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg">
