@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { FileUploadDialog } from "@/components/admin/FileUploadDialog";
 import { RiskAssessmentsTable } from "@/components/admin/RiskAssessmentsTable";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -50,11 +51,14 @@ const Admin = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <AdminHeader
-        onBackClick={() => navigate('/dashboard')}
-        onUploadClick={() => setShowUploadDialog(true)}
-        uploading={uploading}
-      />
+      <div className="flex items-center gap-4">
+        <SidebarTrigger />
+        <AdminHeader
+          onBackClick={() => navigate('/dashboard')}
+          onUploadClick={() => setShowUploadDialog(true)}
+          uploading={uploading}
+        />
+      </div>
 
       <FileUploadDialog
         showDialog={showUploadDialog}
