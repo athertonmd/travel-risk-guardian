@@ -9,9 +9,9 @@ interface AuthContentProps {
 
 const AuthContent = ({ errorMessage }: AuthContentProps) => {
   return (
-    <div className="flex-1 flex items-center justify-center relative z-10 w-full">
-      <div className="w-full max-w-md">
-        <div className="backdrop-blur-sm bg-white/90 p-8 rounded-xl shadow-2xl mx-auto">
+    <div className="absolute inset-0 flex items-center justify-center">
+      <div className="w-full max-w-md px-4">
+        <div className="backdrop-blur-sm bg-white/90 p-8 rounded-xl shadow-2xl">
           <div>
             <h1 className="text-center text-3xl font-bold text-gray-900">
               Travel Risk Guardian
