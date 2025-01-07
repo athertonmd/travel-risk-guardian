@@ -31,8 +31,8 @@ const RiskMap = ({ assessments }: RiskMapProps) => {
           container: mapContainer.current,
           style: 'mapbox://styles/mapbox/light-v11',
           projection: 'globe',
-          zoom: 3.5, // Increased zoom level for better view of Europe
-          center: [15, 50], // Centered on Europe (approximately central Europe)
+          zoom: 3.5,
+          center: [15, 50],
           pitch: 45,
         });
 
@@ -63,11 +63,11 @@ const RiskMap = ({ assessments }: RiskMapProps) => {
             paint: {
               'fill-color': [
                 'case',
-                ['==', ['get', 'risk_level'], 'extreme'], '#ef4444', // red
-                ['==', ['get', 'risk_level'], 'high'], '#f97316', // orange
-                ['==', ['get', 'risk_level'], 'medium'], '#eab308', // yellow
-                ['==', ['get', 'risk_level'], 'low'], '#22c55e', // green
-                'rgba(0, 0, 0, 0)' // default transparent
+                ['==', ['get', 'risk_level'], 'extreme'], '#ef4444',
+                ['==', ['get', 'risk_level'], 'high'], '#f97316',
+                ['==', ['get', 'risk_level'], 'medium'], '#eab308',
+                ['==', ['get', 'risk_level'], 'low'], '#22c55e',
+                'rgba(0, 0, 0, 0)'
               ],
               'fill-opacity': 0.5
             }
@@ -88,12 +88,15 @@ const RiskMap = ({ assessments }: RiskMapProps) => {
           // Update country colors based on risk assessments
           const setCountryColors = () => {
             const countryFeatures = assessments.map(assessment => ({
-              type: 'Feature',
+              type: 'Feature' as const,
               properties: {
                 risk_level: assessment.assessment,
                 name: assessment.country
               },
-              geometry: null
+              geometry: {
+                type: 'Point' as const,
+                coordinates: [0, 0]
+              }
             }));
 
             if (mapInstance.getSource('risk-data')) {
@@ -114,7 +117,6 @@ const RiskMap = ({ assessments }: RiskMapProps) => {
             const riskLevel = feature.properties.risk_level;
             if (riskLevel) {
               mapInstance.getCanvas().style.cursor = 'pointer';
-              // You could add a popup here if desired
             }
           }
         });
