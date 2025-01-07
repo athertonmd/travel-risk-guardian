@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Home, Settings, LogOut, PanelLeftClose } from "lucide-react";
+import { Home, Settings, LogOut } from "lucide-react";
 import { format } from "date-fns";
 import {
   Sidebar,
@@ -13,17 +13,14 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 
 export function AppSidebar() {
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState<string>("");
   const [lastLogin, setLastLogin] = useState<string>("");
-  const { toggleSidebar } = useSidebar();
 
   useEffect(() => {
     const getUserInfo = async () => {
@@ -58,25 +55,14 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="border-b border-border/10 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Avatar>
-              <AvatarFallback>{userEmail.charAt(0).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <div className="space-y-1">
-              <p className="text-sm font-medium leading-none">{userEmail}</p>
-              <p className="text-xs text-muted-foreground">Last login: {lastLogin}</p>
-            </div>
+        <div className="flex items-center gap-3">
+          <Avatar>
+            <AvatarFallback>{userEmail.charAt(0).toUpperCase()}</AvatarFallback>
+          </Avatar>
+          <div className="space-y-1">
+            <p className="text-sm font-medium leading-none">{userEmail}</p>
+            <p className="text-xs text-muted-foreground">Last login: {lastLogin}</p>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleSidebar}
-            className="h-8 w-8"
-          >
-            <PanelLeftClose className="h-4 w-4" />
-            <span className="sr-only">Toggle sidebar</span>
-          </Button>
         </div>
       </SidebarHeader>
       <SidebarContent>
