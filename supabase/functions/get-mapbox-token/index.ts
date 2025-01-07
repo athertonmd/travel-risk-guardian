@@ -20,12 +20,12 @@ serve(async (req) => {
   }
 
   try {
-    // Get the authorization header
+    // Get the authorization header and verify it's properly formatted
     const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
-      console.error('No authorization header found')
+    if (!authHeader?.startsWith('Bearer ')) {
+      console.error('Invalid or missing authorization header')
       return new Response(
-        JSON.stringify({ error: 'No authorization header' }),
+        JSON.stringify({ error: 'Invalid or missing authorization header' }),
         { 
           status: 401,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
