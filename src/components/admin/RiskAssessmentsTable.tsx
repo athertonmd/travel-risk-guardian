@@ -1,6 +1,5 @@
 import { format } from "date-fns";
 import { useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Table,
@@ -10,19 +9,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { TableActionButtons } from "./TableActionButtons";
+import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
 
 interface RiskAssessment {
   id: string;
@@ -115,31 +105,9 @@ export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessments
                   <TableCell>{format(new Date(assessment.updated_at), "PPp")}</TableCell>
                   <TableCell>{assessment.profiles?.email}</TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          toast({
-                            title: "Coming Soon",
-                            description: "Edit functionality will be available soon",
-                          });
-                        }}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Pencil className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                        <span className="sr-only">Edit</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => confirmDelete(assessment)}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive hover:text-destructive/90" />
-                        <span className="sr-only">Delete</span>
-                      </Button>
-                    </div>
+                    <TableActionButtons
+                      onDelete={() => confirmDelete(assessment)}
+                    />
                   </TableCell>
                 </TableRow>
               ))
@@ -148,26 +116,12 @@ export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessments
         </Table>
       </div>
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the risk assessment
-              for {selectedAssessment?.country}.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => selectedAssessment && handleDelete(selectedAssessment)}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmationDialog
+        isOpen={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={() => selectedAssessment && handleDelete(selectedAssessment)}
+        countryName={selectedAssessment?.country}
+      />
     </>
   );
 };
