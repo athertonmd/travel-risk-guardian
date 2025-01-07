@@ -20,8 +20,10 @@ serve(async (req) => {
   }
 
   try {
-    // Get the authorization header and verify it's properly formatted
+    // Get the authorization header
     const authHeader = req.headers.get('Authorization')
+    console.log('Auth header:', authHeader ? 'Present' : 'Missing')
+
     if (!authHeader?.startsWith('Bearer ')) {
       console.error('Invalid or missing authorization header')
       return new Response(
