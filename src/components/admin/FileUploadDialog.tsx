@@ -3,6 +3,7 @@ import { Upload } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -35,22 +36,11 @@ export const FileUploadDialog = ({ showDialog, onOpenChange }: FileUploadDialogP
       formData.append('file', file);
       formData.append('userId', session.user.id);
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-excel`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-          body: formData,
-        }
-      );
+      const { data, error } = await supabase.functions.invoke('process-excel', {
+        body: formData,
+      });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error);
-      }
+      if (error) throw error;
 
       toast({
         title: "Success",
@@ -58,9 +48,10 @@ export const FileUploadDialog = ({ showDialog, onOpenChange }: FileUploadDialogP
       });
       onOpenChange(false);
     } catch (error) {
+      console.error('Upload error:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to upload file",
         variant: "destructive",
       });
     } finally {
