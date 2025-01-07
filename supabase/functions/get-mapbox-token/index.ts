@@ -18,13 +18,12 @@ serve(async (req) => {
   }
 
   try {
-    // Get the authorization header
+    // Get the authorization header and validate it
     const authHeader = req.headers.get('Authorization')
-    
     if (!authHeader) {
-      console.error('No authorization header provided')
+      console.error('No authorization header')
       return new Response(
-        JSON.stringify({ error: 'No authorization header provided' }),
+        JSON.stringify({ error: 'No authorization header' }),
         { 
           status: 401,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -32,7 +31,7 @@ serve(async (req) => {
       )
     }
 
-    // Create a Supabase client with the Auth context of the logged in user
+    // Create Supabase client with auth context
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -43,14 +42,11 @@ serve(async (req) => {
       }
     )
 
-    // Get the session of the logged in user
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabaseClient.auth.getSession()
+    // Get the session
+    const { data: { user }, error: sessionError } = await supabaseClient.auth.getUser()
 
-    if (sessionError || !session) {
-      console.error('Session error:', sessionError || 'No session found')
+    if (sessionError || !user) {
+      console.error('Session error:', sessionError?.message || 'No user found')
       return new Response(
         JSON.stringify({ error: 'Unauthorized - Invalid session' }),
         { 
@@ -60,10 +56,10 @@ serve(async (req) => {
       )
     }
 
+    // Get Mapbox token
     const token = Deno.env.get('MAPBOX_TOKEN')
-    
     if (!token) {
-      console.error('MAPBOX_TOKEN not found in environment')
+      console.error('MAPBOX_TOKEN not found')
       return new Response(
         JSON.stringify({ error: 'Mapbox token not configured' }),
         { 
@@ -73,13 +69,13 @@ serve(async (req) => {
       )
     }
 
-    // Return the Mapbox token
+    console.log('Successfully retrieved token for user:', user.id)
     return new Response(
       JSON.stringify({ token }),
       { 
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      },
+      }
     )
   } catch (error) {
     console.error('Error in get-mapbox-token:', error)

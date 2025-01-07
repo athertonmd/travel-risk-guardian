@@ -17,19 +17,17 @@ export const useMapbox = () => {
           return;
         }
 
-        // Log the access token presence for debugging
-        console.log('Session access token present:', !!session.access_token);
+        console.log('Attempting to fetch Mapbox token with session:', session.user.id);
 
         const { data, error: functionError } = await supabase.functions.invoke('get-mapbox-token', {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json'
           }
         });
 
         if (functionError) {
-          console.error('Error fetching Mapbox token:', functionError);
-          setError('Failed to load map configuration. Please try again.');
+          console.error('Function error:', functionError);
+          setError('Failed to load map configuration');
           setIsLoading(false);
           return;
         }
