@@ -89,7 +89,7 @@ export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessments
               <TableHead>Date</TableHead>
               <TableHead>Update Date</TableHead>
               <TableHead>Amended by</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -114,8 +114,8 @@ export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessments
                   <TableCell>{format(new Date(assessment.created_at), "PPp")}</TableCell>
                   <TableCell>{format(new Date(assessment.updated_at), "PPp")}</TableCell>
                   <TableCell>{assessment.profiles?.email}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
                       <Button
                         variant="ghost"
                         size="icon"
@@ -125,15 +125,19 @@ export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessments
                             description: "Edit functionality will be available soon",
                           });
                         }}
+                        className="h-8 w-8 p-0"
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                        <span className="sr-only">Edit</span>
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => confirmDelete(assessment)}
+                        className="h-8 w-8 p-0"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4 text-destructive hover:text-destructive/90" />
+                        <span className="sr-only">Delete</span>
                       </Button>
                     </div>
                   </TableCell>
