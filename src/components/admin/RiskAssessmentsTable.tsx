@@ -1,6 +1,7 @@
 import { format } from "date-fns";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { Download } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -9,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { TableActionButtons } from "./TableActionButtons";
@@ -67,8 +69,29 @@ export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessments
     setDeleteDialogOpen(true);
   };
 
+  const downloadTemplate = () => {
+    const link = document.createElement('a');
+    link.href = '/template.xlsx';
+    link.download = 'risk-assessment-template.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <>
+      <div className="mb-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={downloadTemplate}
+          className="flex items-center gap-2"
+        >
+          <Download className="h-4 w-4" />
+          Download Template
+        </Button>
+      </div>
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>
