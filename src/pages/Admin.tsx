@@ -15,11 +15,21 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 
 const Admin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -92,6 +102,7 @@ const Admin = () => {
         title: "Success",
         description: "Risk assessments uploaded successfully",
       });
+      setShowUploadDialog(false);
     } catch (error) {
       toast({
         title: "Error",
@@ -116,19 +127,38 @@ const Admin = () => {
           Back to Dashboard
         </Button>
         <div className="flex items-center gap-4">
-          <Input
-            type="file"
-            accept=".xlsx,.xls"
-            onChange={handleFileUpload}
+          <Button 
+            onClick={() => setShowUploadDialog(true)} 
             disabled={uploading}
-            className="max-w-xs"
-          />
-          <Button disabled={uploading}>
+          >
             <Upload className="h-4 w-4 mr-2" />
             {uploading ? "Uploading..." : "Upload Excel"}
           </Button>
         </div>
       </div>
+
+      <AlertDialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Upload Excel File</AlertDialogTitle>
+            <AlertDialogDescription>
+              Select an Excel file or drag and drop it here to upload your risk assessments.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="my-4 p-8 border-2 border-dashed rounded-lg text-center">
+            <Input
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={handleFileUpload}
+              disabled={uploading}
+              className="mx-auto"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <div className="rounded-md border">
         <Table>
