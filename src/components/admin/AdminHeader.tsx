@@ -9,7 +9,7 @@ interface AdminHeaderProps {
 
 export const AdminHeader = ({ onBackClick, onUploadClick, uploading }: AdminHeaderProps) => {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex-1 flex items-center justify-between">
       <Button
         variant="ghost"
         size="sm"
