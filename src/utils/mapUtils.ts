@@ -60,10 +60,10 @@ export const updateCountryColors = (map: mapboxgl.Map, assessments: RiskAssessme
     console.log(`Processing country: ${countryName} with risk level: ${assessment.assessment}`);
   });
 
-  // Create the paint expression
+  // Create the paint expression with uppercase country names
   const paintExpression: mapboxgl.Expression = [
     'match',
-    ['get', 'name_en'],
+    ['upcase', ['get', 'name_en']], // Convert Mapbox country names to uppercase
     ...Object.entries(countryRiskLevels).flatMap(([country, risk]) => [
       country,
       risk === 'extreme' ? '#ef4444' :
