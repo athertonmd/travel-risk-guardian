@@ -8,11 +8,12 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { AddRiskAssessmentDialog } from "./AddRiskAssessmentDialog";
 import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
 import { EditRiskAssessmentDialog } from "./EditRiskAssessmentDialog";
 import { RiskAssessmentsTableBody } from "./RiskAssessmentsTableBody";
 import { RiskAssessmentSearch } from "./RiskAssessmentSearch";
+import { RiskAssessmentActions } from "./RiskAssessmentActions";
+import { useRiskAssessmentFilters } from "./hooks/useRiskAssessmentFilters";
 
 interface RiskAssessment {
   id: string;
@@ -35,10 +36,15 @@ export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessments
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedAssessment, setSelectedAssessment] = useState<RiskAssessment | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [assessmentFilter, setAssessmentFilter] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { 
+    searchTerm, 
+    setSearchTerm, 
+    assessmentFilter, 
+    setAssessmentFilter, 
+    filteredAssessments 
+  } = useRiskAssessmentFilters(assessments);
 
   const handleDelete = async (assessment: RiskAssessment) => {
     try {
@@ -75,19 +81,9 @@ export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessments
     setEditDialogOpen(true);
   };
 
-  const filteredAssessments = assessments?.filter((assessment) => {
-    const matchesSearch = assessment.country.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesAssessment = !assessmentFilter || assessment.assessment === assessmentFilter;
-    return matchesSearch && matchesAssessment;
-  });
-
   return (
     <>
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex gap-2">
-          <AddRiskAssessmentDialog />
-        </div>
-      </div>
+      <RiskAssessmentActions />
 
       <RiskAssessmentSearch
         searchTerm={searchTerm}
