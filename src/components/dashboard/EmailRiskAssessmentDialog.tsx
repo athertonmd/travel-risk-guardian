@@ -32,15 +32,22 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information }: 
 
   const onSubmit = async (data: EmailFormData) => {
     try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) throw new Error('User not authenticated');
+
       const ccEmails = data.cc ? data.cc.split(',').map(email => email.trim()) : [];
       
       const { error } = await supabase.functions.invoke('send-risk-assessment', {
         body: {
-          to: [data.email],
+          to: data.email,
           cc: ccEmails,
           country,
-          assessment,
-          information
+          risk_level: assessment,
+          information,
+          user_id: user.id
         },
       });
 

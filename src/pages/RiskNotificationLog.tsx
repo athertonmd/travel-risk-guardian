@@ -37,7 +37,10 @@ const RiskNotificationLog = () => {
         `)
         .order('sent_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching email logs:', error);
+        throw error;
+      }
       return data as EmailLog[];
     },
   });
@@ -75,18 +78,20 @@ const RiskNotificationLog = () => {
               <TableHead>Sent By</TableHead>
               <TableHead>Date Sent</TableHead>
               <TableHead>Status</TableHead>
+              {/* Add error message column */}
+              <TableHead>Error</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center">
+                <TableCell colSpan={8} className="text-center">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : emailLogs?.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center">
+                <TableCell colSpan={8} className="text-center">
                   No email logs found
                 </TableCell>
               </TableRow>
@@ -99,7 +104,7 @@ const RiskNotificationLog = () => {
                   <TableCell>{getRiskLevelBadge(log.risk_level)}</TableCell>
                   <TableCell>{log.profiles.email}</TableCell>
                   <TableCell>
-                    {format(new Date(log.sent_at!), "MMM d, yyyy HH:mm")}
+                    {log.sent_at ? format(new Date(log.sent_at), "MMM d, yyyy HH:mm") : "-"}
                   </TableCell>
                   <TableCell>
                     <Badge
@@ -107,6 +112,9 @@ const RiskNotificationLog = () => {
                     >
                       {log.status}
                     </Badge>
+                  </TableCell>
+                  <TableCell className="text-sm text-red-500">
+                    {log.error_message || "-"}
                   </TableCell>
                 </TableRow>
               ))
