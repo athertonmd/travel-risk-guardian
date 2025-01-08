@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   SidebarContent,
   SidebarGroup,
@@ -15,6 +15,7 @@ import { navigationItems } from "./navigationItems";
 
 export const SidebarNavigation = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   return (
     <SidebarContent>
@@ -35,6 +36,7 @@ export const SidebarNavigation = () => {
                         <SidebarMenuSubItem key={subItem.title}>
                           <SidebarMenuSubButton
                             onClick={() => navigate(subItem.url)}
+                            isActive={location.pathname === subItem.url}
                           >
                             {subItem.title}
                           </SidebarMenuSubButton>
@@ -46,6 +48,7 @@ export const SidebarNavigation = () => {
                   <SidebarMenuButton
                     tooltip={item.title}
                     onClick={() => navigate(item.url)}
+                    isActive={location.pathname === item.url}
                   >
                     <item.icon className="h-4 w-4" />
                     <span>{item.title}</span>

@@ -60,6 +60,7 @@ const RiskNotificationLog = () => {
           onBackClick={() => navigate('/dashboard')}
           onUploadClick={() => {}}
           uploading={false}
+          hideUpload
         />
       </div>
 

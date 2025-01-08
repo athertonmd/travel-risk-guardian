@@ -5,9 +5,10 @@ interface AdminHeaderProps {
   onBackClick: () => void;
   onUploadClick: () => void;
   uploading: boolean;
+  hideUpload?: boolean;
 }
 
-export const AdminHeader = ({ onBackClick, onUploadClick, uploading }: AdminHeaderProps) => {
+export const AdminHeader = ({ onBackClick, onUploadClick, uploading, hideUpload }: AdminHeaderProps) => {
   return (
     <div className="flex-1 flex items-center justify-between">
       <Button
@@ -19,15 +20,17 @@ export const AdminHeader = ({ onBackClick, onUploadClick, uploading }: AdminHead
         <ArrowLeft className="h-4 w-4" />
         Back to Dashboard
       </Button>
-      <div className="flex items-center gap-4">
-        <Button 
-          onClick={onUploadClick}
-          disabled={uploading}
-        >
-          <Upload className="h-4 w-4 mr-2" />
-          {uploading ? "Uploading..." : "Upload Excel"}
-        </Button>
-      </div>
+      {!hideUpload && (
+        <div className="flex items-center gap-4">
+          <Button 
+            onClick={onUploadClick}
+            disabled={uploading}
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            {uploading ? "Uploading..." : "Upload Excel"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
