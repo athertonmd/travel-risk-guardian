@@ -30,12 +30,18 @@ export const useMapSearch = (
 
     if (searchedAssessment) {
       try {
+        console.log(`Searching for country: ${searchedAssessment.country}`);
+        
+        // Query for the country features
         const features = mapInstance.querySourceFeatures('countries', {
           sourceLayer: 'country_boundaries',
           filter: ['==', ['downcase', ['get', 'name_en']], searchedAssessment.country.toLowerCase()]
         });
 
         if (features.length > 0) {
+          console.log(`Found ${features.length} features for ${searchedAssessment.country}`);
+          
+          // Calculate bounds for the country
           const bounds = new mapboxgl.LngLatBounds();
           features.forEach(feature => {
             if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') {
@@ -51,6 +57,9 @@ export const useMapSearch = (
             }
           });
 
+          // Start the animation sequence
+          console.log('Starting animation sequence');
+          
           // First, rotate the map 360 degrees
           mapInstance.easeTo({
             bearing: 360,
@@ -58,16 +67,18 @@ export const useMapSearch = (
             pitch: 0
           });
 
-          // After rotation, fit to bounds with pitch
+          // After rotation, fit to bounds
           setTimeout(() => {
+            console.log('Fitting to bounds');
             mapInstance.fitBounds(bounds, {
-              padding: 100,
+              padding: { top: 100, bottom: 100, left: 100, right: 100 },
               maxZoom: 6,
               duration: 2000
             });
 
             // After fitting bounds, add some pitch for 3D effect
             setTimeout(() => {
+              console.log('Applying final pitch');
               mapInstance.easeTo({
                 bearing: 0,
                 pitch: 60,
@@ -75,12 +86,19 @@ export const useMapSearch = (
               });
             }, 2000);
           }, 2000);
+        } else {
+          console.log(`No features found for ${searchedAssessment.country}`);
         }
       } catch (error) {
         console.error('Error during search:', error);
       }
     }
   };
+
+  // Trigger search when searchTerm changes
+  useEffect(() => {
+    handleSearch();
+  }, [searchTerm]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return { handleSearch };
 };
