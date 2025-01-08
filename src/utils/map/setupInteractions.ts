@@ -21,16 +21,21 @@ export const setupMapInteractions = (
   const popupContainer = document.createElement('div');
   let root: ReturnType<typeof createRoot> | null = null;
 
+  const handleCountryFeature = (feature: mapboxgl.MapboxGeoJSONFeature) => {
+    const countryName = feature.properties?.name_en;
+    if (!countryName) return;
+
+    const assessment = assessments.find(
+      a => a.country.toLowerCase() === countryName.toLowerCase()
+    );
+
+    return assessment;
+  };
+
   map.on('mousemove', 'country-fills', (e) => {
     if (e.features && e.features.length > 0) {
       map.getCanvas().style.cursor = 'pointer';
-      const feature = e.features[0];
-      const countryName = feature.properties.name_en;
-      
-      // Find assessment for this country
-      const assessment = assessments.find(
-        a => a.country.toLowerCase() === countryName.toLowerCase()
-      );
+      const assessment = handleCountryFeature(e.features[0]);
 
       if (assessment) {
         // Create new root if it doesn't exist
@@ -66,19 +71,13 @@ export const setupMapInteractions = (
     }
   });
 
-  // Add click interaction if handler is provided
-  if (onCountryClick) {
-    map.on('click', 'country-fills', (e) => {
-      if (e.features && e.features.length > 0) {
-        const countryName = e.features[0].properties.name_en;
-        const assessment = assessments.find(
-          a => a.country.toLowerCase() === countryName.toLowerCase()
-        );
-        
-        if (assessment) {
-          onCountryClick(assessment.country);
-        }
+  // Handle both hover and click interactions
+  map.on('click', 'country-fills', (e) => {
+    if (e.features && e.features.length > 0) {
+      const assessment = handleCountryFeature(e.features[0]);
+      if (assessment && onCountryClick) {
+        onCountryClick(assessment.country);
       }
-    });
-  }
+    }
+  });
 };
