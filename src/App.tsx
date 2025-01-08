@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { AppSidebar } from "@/components/AppSidebar";
@@ -12,23 +12,33 @@ import "./App.css";
 
 const queryClient = new QueryClient();
 
+// Wrapper component to handle conditional sidebar rendering
+function AppContent() {
+  const location = useLocation();
+  const isAuthPage = location.pathname === "/auth";
+
+  return (
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        {!isAuthPage && <AppSidebar />}
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/admin/risk-assessments" element={<Admin />} />
+          <Route path="/admin/notifications" element={<RiskNotificationLog />} />
+        </Routes>
+      </div>
+      <Toaster />
+    </SidebarProvider>
+  );
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
-        <SidebarProvider>
-          <div className="flex min-h-screen w-full">
-            <AppSidebar />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/admin/risk-assessments" element={<Admin />} />
-              <Route path="/admin/notifications" element={<RiskNotificationLog />} />
-            </Routes>
-          </div>
-          <Toaster />
-        </SidebarProvider>
+        <AppContent />
       </Router>
     </QueryClientProvider>
   );
