@@ -46,9 +46,9 @@ serve(async (req) => {
       throw new Error('Could not find user email');
     }
 
-    // Prepare email data using the user's verified email
+    // Prepare email data using Netlify domain
     const mainEmailData = {
-      from: `Risk Assessment <${userData.email}>`,
+      from: 'Risk Assessment <onboarding@resend.dev>',  // Using Resend's testing domain
       to,
       subject: `Risk Assessment - ${country}`,
       html,
