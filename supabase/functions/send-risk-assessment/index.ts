@@ -35,7 +35,7 @@ serve(async (req) => {
       <p>${information}</p>
     `;
 
-    // Get user's email for the from field
+    // Get user's email for logging purposes
     const { data: userData, error: userError } = await supabase
       .from('profiles')
       .select('email')
@@ -46,18 +46,22 @@ serve(async (req) => {
       throw new Error('Could not find user email');
     }
 
-    // Prepare email data using Netlify domain
+    // Prepare email data using Resend's default domain
     const mainEmailData = {
-      from: 'Risk Assessment <onboarding@resend.dev>',  // Using Resend's testing domain
+      from: 'Travel Risk Guardian <onboarding@resend.dev>',
       to,
       subject: `Risk Assessment - ${country}`,
       html,
     };
 
-    console.log('Sending main email with data:', JSON.stringify(mainEmailData, null, 2));
+    if (cc && cc.length > 0) {
+      mainEmailData.cc = cc;
+    }
+
+    console.log('Sending email with data:', JSON.stringify(mainEmailData, null, 2));
     
     try {
-      // Send main email
+      // Send email using Resend
       const mainRes = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
@@ -74,7 +78,7 @@ serve(async (req) => {
         // Log failed email attempt
         const { error: logError } = await supabase.from('email_logs').insert({
           recipient: to,
-          cc: cc ? cc : null,
+          cc: cc || null,
           country,
           risk_level: formattedRiskLevel,
           sent_by: user_id,
@@ -93,7 +97,7 @@ serve(async (req) => {
       // Log successful email
       const { error: logError } = await supabase.from('email_logs').insert({
         recipient: to,
-        cc: cc ? cc : null,
+        cc: cc || null,
         country,
         risk_level: formattedRiskLevel,
         sent_by: user_id,
