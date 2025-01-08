@@ -20,16 +20,24 @@ interface EmailDialogProps {
   information: string;
 }
 
+interface EmailFormData {
+  email: string;
+  cc: string;
+}
+
 export const EmailRiskAssessmentDialog = ({ country, assessment, information }: EmailDialogProps) => {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
-  const { register, handleSubmit, formState: { isSubmitting } } = useForm<{ email: string }>();
+  const { register, handleSubmit, formState: { isSubmitting } } = useForm<EmailFormData>();
 
-  const onSubmit = async ({ email }: { email: string }) => {
+  const onSubmit = async (data: EmailFormData) => {
     try {
+      const ccEmails = data.cc ? data.cc.split(',').map(email => email.trim()) : [];
+      
       const { error } = await supabase.functions.invoke('send-risk-assessment', {
         body: {
-          to: [email],
+          to: [data.email],
+          cc: ccEmails,
           country,
           assessment,
           information
@@ -73,6 +81,15 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information }: 
               type="email"
               placeholder="Enter recipient's email"
               {...register("email", { required: true })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="cc">CC (Optional)</Label>
+            <Input
+              id="cc"
+              type="text"
+              placeholder="Enter CC emails, separated by commas"
+              {...register("cc")}
             />
           </div>
           <Button type="submit" disabled={isSubmitting}>
