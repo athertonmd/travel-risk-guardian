@@ -1,23 +1,35 @@
-import { Home, Settings } from "lucide-react";
+import {
+  BarChart3,
+  FileText,
+  Globe,
+  Mail,
+  Settings,
+  Users,
+} from "lucide-react";
 
 export const navigationItems = [
   {
     title: "Dashboard",
+    icon: BarChart3,
     url: "/dashboard",
-    icon: Home,
   },
   {
-    title: "Admin",
-    icon: Settings,
+    title: "Risk Management",
+    icon: Globe,
     subItems: [
       {
-        title: "Manage Risk Assessment",
-        url: "/admin",
+        title: "Risk Assessments",
+        url: "/admin/risk-assessments",
       },
       {
-        title: "Risk Notification Log",
+        title: "Risk Notifications",
         url: "/admin/notifications",
       },
     ],
+  },
+  {
+    title: "Settings",
+    icon: Settings,
+    url: "/settings",
   },
 ];
