@@ -52,46 +52,48 @@ const Dashboard = () => {
   }, [navigate]);
 
   return (
-    <div className="p-6">
-      <div className="mb-4">
-        <SidebarTrigger />
-      </div>
-      
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Risk Assessments Dashboard</h1>
-        
-        <DashboardSearch 
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-        />
-
-        <div className="mb-8">
-          <RiskMap 
-            assessments={filteredAssessments} 
-            searchTerm={searchTerm}
-          />
+    <div className="flex-1 w-full">
+      <div className="p-6">
+        <div className="mb-4">
+          <SidebarTrigger />
         </div>
+        
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">Risk Assessments Dashboard</h1>
+          
+          <DashboardSearch 
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+          />
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredAssessments.map((assessment) => (
-            <div 
-              key={assessment.id}
-              className="p-6 rounded-lg border bg-white shadow-sm hover:shadow-md transition-shadow"
-            >
-              <h3 className="text-lg font-semibold mb-2">{assessment.country}</h3>
-              <div className="mb-2">
-                <span className={`inline-block px-2 py-1 rounded text-sm font-medium ${
-                  assessment.assessment === 'low' ? 'bg-green-100 text-green-800' :
-                  assessment.assessment === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                  assessment.assessment === 'high' ? 'bg-orange-100 text-orange-800' :
-                  'bg-red-100 text-red-800'
-                }`}>
-                  {assessment.assessment.toUpperCase()}
-                </span>
+          <div className="mb-8">
+            <RiskMap 
+              assessments={filteredAssessments} 
+              searchTerm={searchTerm}
+            />
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredAssessments.map((assessment) => (
+              <div 
+                key={assessment.id}
+                className="p-6 rounded-lg border bg-white shadow-sm hover:shadow-md transition-shadow"
+              >
+                <h3 className="text-lg font-semibold mb-2">{assessment.country}</h3>
+                <div className="mb-2">
+                  <span className={`inline-block px-2 py-1 rounded text-sm font-medium ${
+                    assessment.assessment === 'low' ? 'bg-green-100 text-green-800' :
+                    assessment.assessment === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                    assessment.assessment === 'high' ? 'bg-orange-100 text-orange-800' :
+                    'bg-red-100 text-red-800'
+                  }`}>
+                    {assessment.assessment.toUpperCase()}
+                  </span>
+                </div>
+                <p className="text-gray-600">{assessment.information}</p>
               </div>
-              <p className="text-gray-600">{assessment.information}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>
