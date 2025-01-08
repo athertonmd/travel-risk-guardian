@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
-const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,7 +16,8 @@ serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Create a Supabase client with the service role key
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const { to, cc, country, risk_level, information, user_id } = await req.json();
 
     // Validate required fields
@@ -43,6 +44,7 @@ serve(async (req) => {
       .single();
 
     if (userError || !userData) {
+      console.error('Error fetching user profile:', userError);
       throw new Error('Could not find user email');
     }
 
