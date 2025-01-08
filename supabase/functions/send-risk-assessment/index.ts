@@ -49,7 +49,7 @@ serve(async (req) => {
     }
 
     // During testing, we can only send to the verified email
-    const testingMode = true; // Set this to false after domain verification
+    const testingMode = true; // Keep this true until domain is verified
     const recipientEmail = testingMode ? 'athertonmd@gmail.com' : to;
 
     // Prepare email data using the correct domain
