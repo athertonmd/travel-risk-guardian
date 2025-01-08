@@ -14,6 +14,13 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type EmailLog = Database['public']['Tables']['email_logs']['Row'] & {
   profiles: {
@@ -55,6 +62,35 @@ const RiskNotificationLog = () => {
     return <Badge variant={variants[level]}>{level.toUpperCase()}</Badge>;
   };
 
+  const getStatusIcon = (status: string, errorMessage?: string | null) => {
+    if (status === 'sent') {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <CheckCircle2 className="h-5 w-5 text-green-500" />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Email sent successfully</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger>
+            <AlertCircle className="h-5 w-5 text-red-500" />
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{errorMessage || 'Failed to send email'}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center gap-4">
@@ -71,51 +107,42 @@ const RiskNotificationLog = () => {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Date Sent</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>Recipient</TableHead>
               <TableHead>CC</TableHead>
               <TableHead>Country</TableHead>
               <TableHead>Risk Level</TableHead>
               <TableHead>Sent By</TableHead>
-              <TableHead>Date Sent</TableHead>
-              <TableHead>Status</TableHead>
-              {/* Add error message column */}
-              <TableHead>Error</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center">
+                <TableCell colSpan={7} className="text-center">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : emailLogs?.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center">
+                <TableCell colSpan={7} className="text-center">
                   No email logs found
                 </TableCell>
               </TableRow>
             ) : (
               emailLogs?.map((log) => (
                 <TableRow key={log.id}>
+                  <TableCell>
+                    {log.sent_at ? format(new Date(log.sent_at), "MMM d, yyyy HH:mm") : "-"}
+                  </TableCell>
+                  <TableCell>
+                    {getStatusIcon(log.status, log.error_message)}
+                  </TableCell>
                   <TableCell>{log.recipient}</TableCell>
                   <TableCell>{log.cc?.join(", ") || "-"}</TableCell>
                   <TableCell>{log.country}</TableCell>
                   <TableCell>{getRiskLevelBadge(log.risk_level)}</TableCell>
                   <TableCell>{log.profiles.email}</TableCell>
-                  <TableCell>
-                    {log.sent_at ? format(new Date(log.sent_at), "MMM d, yyyy HH:mm") : "-"}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={log.status === "sent" ? "default" : "destructive"}
-                    >
-                      {log.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-sm text-red-500">
-                    {log.error_message || "-"}
-                  </TableCell>
                 </TableRow>
               ))
             )}
