@@ -18,7 +18,7 @@ serve(async (req) => {
   }
 
   try {
-    // Get the authorization header and validate it
+    // Get the authorization header
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
       console.error('No authorization header')
@@ -42,11 +42,11 @@ serve(async (req) => {
       }
     )
 
-    // Get the session
-    const { data: { user }, error: sessionError } = await supabaseClient.auth.getUser()
+    // Get the user session
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
 
-    if (sessionError || !user) {
-      console.error('Session error:', sessionError?.message || 'No user found')
+    if (userError || !user) {
+      console.error('Session error:', userError?.message || 'No user found')
       return new Response(
         JSON.stringify({ error: 'Unauthorized - Invalid session' }),
         { 
@@ -56,10 +56,10 @@ serve(async (req) => {
       )
     }
 
-    // Get Mapbox token
+    // Get Mapbox token from environment variables
     const token = Deno.env.get('MAPBOX_TOKEN')
     if (!token) {
-      console.error('MAPBOX_TOKEN not found')
+      console.error('MAPBOX_TOKEN not found in environment variables')
       return new Response(
         JSON.stringify({ error: 'Mapbox token not configured' }),
         { 
