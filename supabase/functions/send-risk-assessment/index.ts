@@ -14,14 +14,18 @@ Deno.serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const { to, cc, country, risk_level, information, user_id } = await req.json();
 
+    // Validate required fields
     if (!to || !country || !risk_level || !information || !user_id) {
       throw new Error('Missing required fields');
     }
 
+    // Ensure risk_level is a string and format it
+    const formattedRiskLevel = (risk_level || '').toString().toUpperCase();
+
     const html = `
       <h1>Risk Assessment Notification</h1>
       <p>A new risk assessment has been created for ${country}.</p>
-      <h2>Risk Level: ${risk_level.toUpperCase()}</h2>
+      <h2>Risk Level: ${formattedRiskLevel}</h2>
       <h2>Details:</h2>
       <p>${information}</p>
     `;
@@ -33,14 +37,6 @@ Deno.serve(async (req) => {
       subject: `Risk Assessment - ${country}`,
       html,
     };
-
-    // Send to CC recipients with modified subject
-    const ccEmailData = cc?.length ? {
-      from: "Risk Assessment <onboarding@resend.dev>",
-      to: cc,
-      subject: `Risk Assessment - ${country} (sent to ${to})`,
-      html,
-    } : null;
 
     console.log('Sending main email with data:', JSON.stringify(mainEmailData, null, 2));
     
@@ -63,7 +59,7 @@ Deno.serve(async (req) => {
         recipient: to,
         cc,
         country,
-        risk_level,
+        risk_level: formattedRiskLevel,
         sent_by: user_id,
         status: 'failed',
         error_message: error
@@ -80,14 +76,21 @@ Deno.serve(async (req) => {
       recipient: to,
       cc,
       country,
-      risk_level,
+      risk_level: formattedRiskLevel,
       sent_by: user_id,
       status: 'sent',
       sent_at: new Date().toISOString()
     });
 
     // Send CC email if there are CC recipients
-    if (ccEmailData) {
+    if (cc?.length) {
+      const ccEmailData = {
+        from: "Risk Assessment <onboarding@resend.dev>",
+        to: cc,
+        subject: `Risk Assessment - ${country} (sent to ${to})`,
+        html,
+      };
+
       console.log('Sending CC email with data:', JSON.stringify(ccEmailData, null, 2));
       const ccRes = await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -106,7 +109,7 @@ Deno.serve(async (req) => {
           recipient: cc.join(', '),
           cc: null,
           country,
-          risk_level,
+          risk_level: formattedRiskLevel,
           sent_by: user_id,
           status: 'failed',
           error_message: error
@@ -117,7 +120,7 @@ Deno.serve(async (req) => {
           recipient: cc.join(', '),
           cc: null,
           country,
-          risk_level,
+          risk_level: formattedRiskLevel,
           sent_by: user_id,
           status: 'sent',
           sent_at: new Date().toISOString()
