@@ -62,13 +62,29 @@ export const AddRiskAssessmentDialog = () => {
         return;
       }
 
+      // First get the user's profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError || !profileData) {
+        toast({
+          title: "Error",
+          description: "Could not find your profile",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from("risk_assessments")
         .insert({
           country: values.country,
           assessment: values.assessment,
           information: values.information,
-          amended_by: user.id,
+          amended_by: profileData.id, // Use the profile ID here
         });
 
       if (error) throw error;
