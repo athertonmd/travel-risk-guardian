@@ -1,4 +1,5 @@
 import { RiskAssessment } from "@/components/dashboard/RiskMap";
+import { EmailRiskAssessmentDialog } from "./EmailRiskAssessmentDialog";
 
 interface RiskAssessmentCardProps {
   assessment: RiskAssessment;
@@ -19,7 +20,12 @@ export const RiskAssessmentCard = ({ assessment }: RiskAssessmentCardProps) => {
   };
 
   return (
-    <div className="p-6 rounded-lg border bg-white shadow-sm hover:shadow-md transition-shadow">
+    <div className="relative p-6 rounded-lg border bg-white shadow-sm hover:shadow-md transition-shadow">
+      <EmailRiskAssessmentDialog
+        country={assessment.country}
+        assessment={assessment.assessment}
+        information={assessment.information}
+      />
       <h3 className="text-lg font-semibold mb-2">{assessment.country}</h3>
       <div className="mb-2">
         <span className={`inline-block px-2 py-1 rounded text-sm font-medium ${getRiskColor(assessment.assessment)}`}>
