@@ -31,22 +31,24 @@ serve(async (req) => {
       )
     }
 
-    // Create Supabase client with auth context
-    const supabaseClient = createClient(
+    // Create Supabase admin client
+    const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
       {
-        global: {
-          headers: { Authorization: authHeader },
-        },
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
       }
     )
 
-    // Get the user session
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
+    // Verify the JWT token
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: verifyError } = await supabaseAdmin.auth.getUser(token)
 
-    if (userError || !user) {
-      console.error('Session error:', userError?.message || 'No user found')
+    if (verifyError || !user) {
+      console.error('Session verification error:', verifyError?.message || 'No user found')
       return new Response(
         JSON.stringify({ error: 'Unauthorized - Invalid session' }),
         { 
@@ -56,9 +58,11 @@ serve(async (req) => {
       )
     }
 
+    console.log('User verified:', user.id)
+
     // Get Mapbox token from environment variables
-    const token = Deno.env.get('MAPBOX_TOKEN')
-    if (!token) {
+    const mapboxToken = Deno.env.get('MAPBOX_TOKEN')
+    if (!mapboxToken) {
       console.error('MAPBOX_TOKEN not found in environment variables')
       return new Response(
         JSON.stringify({ error: 'Mapbox token not configured' }),
@@ -71,7 +75,7 @@ serve(async (req) => {
 
     console.log('Successfully retrieved token for user:', user.id)
     return new Response(
-      JSON.stringify({ token }),
+      JSON.stringify({ token: mapboxToken }),
       { 
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
