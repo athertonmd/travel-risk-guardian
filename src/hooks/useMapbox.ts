@@ -19,6 +19,7 @@ export const useMapbox = () => {
 
         console.log('Attempting to fetch Mapbox token with session:', session.user.id);
 
+        // Update: Properly format the Bearer token
         const { data, error: functionError } = await supabase.functions.invoke('get-mapbox-token', {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
