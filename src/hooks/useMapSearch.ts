@@ -51,18 +51,29 @@ export const useMapSearch = (
             }
           });
 
-          mapInstance.fitBounds(bounds, {
-            padding: 50,
-            maxZoom: 5,
-            duration: 2000
+          // First, rotate the map 360 degrees
+          mapInstance.easeTo({
+            bearing: 360,
+            duration: 2000,
+            pitch: 0
           });
 
+          // After rotation, fit to bounds with pitch
           setTimeout(() => {
-            mapInstance.easeTo({
-              bearing: 0,
-              pitch: 45,
+            mapInstance.fitBounds(bounds, {
+              padding: 100,
+              maxZoom: 6,
               duration: 2000
             });
+
+            // After fitting bounds, add some pitch for 3D effect
+            setTimeout(() => {
+              mapInstance.easeTo({
+                bearing: 0,
+                pitch: 60,
+                duration: 1500
+              });
+            }, 2000);
           }, 2000);
         }
       } catch (error) {
