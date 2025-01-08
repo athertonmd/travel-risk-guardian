@@ -12,12 +12,21 @@ export const useMapbox = () => {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session) {
+          console.error('No session found');
           setError('You must be logged in to view the map');
           setIsLoading(false);
           return;
         }
 
         console.log('Session found, attempting to fetch Mapbox token');
+
+        // Ensure we have a valid access token
+        if (!session.access_token) {
+          console.error('No access token in session');
+          setError('Authentication error');
+          setIsLoading(false);
+          return;
+        }
 
         const { data, error: functionError } = await supabase.functions.invoke('get-mapbox-token', {
           headers: {
@@ -48,7 +57,24 @@ export const useMapbox = () => {
       }
     };
 
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        fetchMapboxToken();
+      } else {
+        setMapboxToken('');
+        setError('You must be logged in to view the map');
+        setIsLoading(false);
+      }
+    });
+
+    // Initial fetch
     fetchMapboxToken();
+
+    // Cleanup subscription
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   return { mapboxToken, isLoading, error };
