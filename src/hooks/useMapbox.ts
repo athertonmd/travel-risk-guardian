@@ -17,12 +17,12 @@ export const useMapbox = () => {
           return;
         }
 
-        console.log('Attempting to fetch Mapbox token with session:', session.user.id);
+        console.log('Session found, attempting to fetch Mapbox token');
 
         const { data, error: functionError } = await supabase.functions.invoke('get-mapbox-token', {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
-          }
+          },
         });
 
         if (functionError) {
