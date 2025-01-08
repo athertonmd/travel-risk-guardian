@@ -13,6 +13,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarProvider,
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -53,56 +54,58 @@ export function AppSidebar() {
   ];
 
   return (
-    <Sidebar>
-      <SidebarHeader className="border-b border-border/10 p-4">
-        <div className="flex items-center gap-3">
-          <Avatar>
-            <AvatarFallback>{userEmail.charAt(0).toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <div className="space-y-1">
-            <p className="text-sm font-medium leading-none">{userEmail}</p>
-            <p className="text-xs text-muted-foreground">Last login: {lastLogin}</p>
+    <SidebarProvider defaultOpen={false}>
+      <Sidebar>
+        <SidebarHeader className="border-b border-border/10 p-4">
+          <div className="flex items-center gap-3">
+            <Avatar>
+              <AvatarFallback>{userEmail.charAt(0).toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <div className="space-y-1">
+              <p className="text-sm font-medium leading-none">{userEmail}</p>
+              <p className="text-xs text-muted-foreground">Last login: {lastLogin}</p>
+            </div>
           </div>
-        </div>
-      </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {items.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      tooltip={item.title}
+                      onClick={() => navigate(item.url)}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarFooter>
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
                   <SidebarMenuButton
-                    tooltip={item.title}
-                    onClick={() => navigate(item.url)}
+                    tooltip="Sign Out"
+                    onClick={handleSignOut}
+                    variant="outline"
                   >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.title}</span>
+                    <LogOut className="h-4 w-4" />
+                    <span>Sign Out</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarFooter>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  tooltip="Sign Out"
-                  onClick={handleSignOut}
-                  variant="outline"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span>Sign Out</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarFooter>
-    </Sidebar>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarFooter>
+      </Sidebar>
+    </SidebarProvider>
   );
 }
