@@ -7,6 +7,7 @@ import { useMapSearch } from '@/hooks/useMapSearch';
 import { useMapSetup } from '@/hooks/useMapSetup';
 
 export interface RiskAssessment {
+  id: string;
   country: string;
   assessment: "low" | "medium" | "high" | "extreme";
   information: string;
