@@ -52,9 +52,9 @@ serve(async (req) => {
     const testingMode = true; // Keep this true until domain is verified
     const recipientEmail = testingMode ? 'athertonmd@gmail.com' : to;
 
-    // Prepare email data using the correct domain
+    // Prepare email data using the default Resend sender during testing
     const mainEmailData = {
-      from: 'Travel Risk Guardian <notifications@tripguardian.netlify.app>',
+      from: 'Travel Risk Guardian <onboarding@resend.dev>',
       to: recipientEmail,
       subject: `Risk Assessment - ${country}`,
       html,
