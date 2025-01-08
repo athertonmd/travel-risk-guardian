@@ -23,6 +23,10 @@ const Dashboard = () => {
     },
   });
 
+  const handleCountryClick = (country: string) => {
+    setSearchTerm(country);
+  };
+
   const filteredAssessments = assessments.filter((assessment) => {
     const searchLower = searchTerm.toLowerCase();
     return (
@@ -64,6 +68,7 @@ const Dashboard = () => {
           <RiskMap 
             assessments={filteredAssessments} 
             searchTerm={searchTerm}
+            onCountryClick={handleCountryClick}
           />
 
           <RiskAssessmentGrid assessments={filteredAssessments} />

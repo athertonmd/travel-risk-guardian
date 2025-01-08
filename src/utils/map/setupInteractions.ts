@@ -4,7 +4,11 @@ import { createRoot } from 'react-dom/client';
 import { CountryPopup } from '@/components/map/CountryPopup';
 import { RiskAssessment } from '@/components/dashboard/RiskMap';
 
-export const setupMapInteractions = (map: mapboxgl.Map, assessments: RiskAssessment[]) => {
+export const setupMapInteractions = (
+  map: mapboxgl.Map, 
+  assessments: RiskAssessment[],
+  onCountryClick?: (country: string) => void
+) => {
   // Create a popup
   const popup = new mapboxgl.Popup({
     closeButton: false,
@@ -61,4 +65,20 @@ export const setupMapInteractions = (map: mapboxgl.Map, assessments: RiskAssessm
       root = null;
     }
   });
+
+  // Add click interaction if handler is provided
+  if (onCountryClick) {
+    map.on('click', 'country-fills', (e) => {
+      if (e.features && e.features.length > 0) {
+        const countryName = e.features[0].properties.name_en;
+        const assessment = assessments.find(
+          a => a.country.toLowerCase() === countryName.toLowerCase()
+        );
+        
+        if (assessment) {
+          onCountryClick(assessment.country);
+        }
+      }
+    });
+  }
 };

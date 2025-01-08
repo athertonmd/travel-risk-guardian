@@ -16,15 +16,16 @@ export interface RiskAssessment {
 interface RiskMapProps {
   assessments: RiskAssessment[];
   searchTerm: string;
+  onCountryClick?: (country: string) => void;
 }
 
-const RiskMap = ({ assessments, searchTerm }: RiskMapProps) => {
+const RiskMap = ({ assessments, searchTerm, onCountryClick }: RiskMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const { mapboxToken, isLoading, error } = useMapbox();
   
   const { map, sourceLoadedRef } = useMapInitialization(mapContainer, mapboxToken);
   const { handleSearch } = useMapSearch(map, sourceLoadedRef, searchTerm, assessments);
-  useMapSetup(map, sourceLoadedRef, assessments, handleSearch);
+  useMapSetup(map, sourceLoadedRef, assessments, handleSearch, onCountryClick);
 
   return (
     <MapContainer isLoading={isLoading} error={error}>
