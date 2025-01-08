@@ -35,9 +35,20 @@ serve(async (req) => {
       <p>${information}</p>
     `;
 
-    // Prepare email data
+    // Get user's email for the from field
+    const { data: userData, error: userError } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('id', user_id)
+      .single();
+
+    if (userError || !userData) {
+      throw new Error('Could not find user email');
+    }
+
+    // Prepare email data using the user's verified email
     const mainEmailData = {
-      from: "Risk Assessment <onboarding@resend.dev>",
+      from: `Risk Assessment <${userData.email}>`,
       to,
       subject: `Risk Assessment - ${country}`,
       html,
@@ -56,10 +67,10 @@ serve(async (req) => {
         body: JSON.stringify(mainEmailData),
       });
 
+      const responseText = await mainRes.text();
+      console.log('Resend API response:', responseText);
+
       if (!mainRes.ok) {
-        const error = await mainRes.text();
-        console.error('Resend API error:', error);
-        
         // Log failed email attempt
         const { error: logError } = await supabase.from('email_logs').insert({
           recipient: to,
@@ -68,7 +79,7 @@ serve(async (req) => {
           risk_level: formattedRiskLevel,
           sent_by: user_id,
           status: 'failed',
-          error_message: error,
+          error_message: responseText,
           sent_at: new Date().toISOString()
         });
 
@@ -76,7 +87,7 @@ serve(async (req) => {
           console.error('Error logging failed email:', logError);
         }
 
-        throw new Error(error);
+        throw new Error(responseText);
       }
 
       // Log successful email
@@ -95,8 +106,7 @@ serve(async (req) => {
         throw logError;
       }
 
-      const data = await mainRes.json();
-      return new Response(JSON.stringify(data), {
+      return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
