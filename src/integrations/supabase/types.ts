@@ -9,6 +9,50 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      email_logs: {
+        Row: {
+          cc: string[] | null
+          country: string
+          error_message: string | null
+          id: string
+          recipient: string
+          risk_level: Database["public"]["Enums"]["risk_level"]
+          sent_at: string | null
+          sent_by: string
+          status: Database["public"]["Enums"]["email_status"]
+        }
+        Insert: {
+          cc?: string[] | null
+          country: string
+          error_message?: string | null
+          id?: string
+          recipient: string
+          risk_level: Database["public"]["Enums"]["risk_level"]
+          sent_at?: string | null
+          sent_by: string
+          status: Database["public"]["Enums"]["email_status"]
+        }
+        Update: {
+          cc?: string[] | null
+          country?: string
+          error_message?: string | null
+          id?: string
+          recipient?: string
+          risk_level?: Database["public"]["Enums"]["risk_level"]
+          sent_at?: string | null
+          sent_by?: string
+          status?: Database["public"]["Enums"]["email_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_logs_sent_by_fkey"
+            columns: ["sent_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -79,6 +123,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      email_status: "sent" | "failed"
       risk_level: "low" | "medium" | "high" | "extreme"
       user_role: "user" | "admin"
     }
