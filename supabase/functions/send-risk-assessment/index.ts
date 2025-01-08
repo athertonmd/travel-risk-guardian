@@ -1,36 +1,28 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from '@supabase/supabase-js';
+import { corsHeaders } from '../_shared/cors.ts';
 
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
-interface EmailRequest {
-  to: string[];
-  cc?: string[];
-  country: string;
-  assessment: string;
-  information: string;
-}
-
-const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const { to, cc, country, assessment, information }: EmailRequest = await req.json();
-    console.log(`Sending risk assessment email for ${country} to:`, to);
-    if (cc?.length) console.log('CC recipients:', cc);
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const { to, cc, country, risk_level, information, user_id } = await req.json();
+
+    if (!to || !country || !risk_level || !information || !user_id) {
+      throw new Error('Missing required fields');
+    }
 
     const html = `
-      <h2>Risk Assessment for ${country}</h2>
-      <p><strong>Risk Level:</strong> ${assessment.toUpperCase()}</p>
-      <p><strong>Information:</strong></p>
+      <h1>Risk Assessment Notification</h1>
+      <p>A new risk assessment has been created for ${country}.</p>
+      <h2>Risk Level: ${risk_level.toUpperCase()}</h2>
+      <h2>Details:</h2>
       <p>${information}</p>
     `;
 
@@ -46,7 +38,7 @@ const handler = async (req: Request): Promise<Response> => {
     const ccEmailData = cc?.length ? {
       from: "Risk Assessment <onboarding@resend.dev>",
       to: cc,
-      subject: `Risk Assessment - ${country} (sent to ${to[0]})`,
+      subject: `Risk Assessment - ${country} (sent to ${to})`,
       html,
     } : null;
 
@@ -65,11 +57,34 @@ const handler = async (req: Request): Promise<Response> => {
     if (!mainRes.ok) {
       const error = await mainRes.text();
       console.error('Resend API error (main email):', error);
+      
+      // Log failed email attempt
+      await supabase.from('email_logs').insert({
+        recipient: to,
+        cc,
+        country,
+        risk_level,
+        sent_by: user_id,
+        status: 'failed',
+        error_message: error
+      });
+
       return new Response(JSON.stringify({ error }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Log successful main email
+    await supabase.from('email_logs').insert({
+      recipient: to,
+      cc,
+      country,
+      risk_level,
+      sent_by: user_id,
+      status: 'sent',
+      sent_at: new Date().toISOString()
+    });
 
     // Send CC email if there are CC recipients
     if (ccEmailData) {
@@ -86,7 +101,27 @@ const handler = async (req: Request): Promise<Response> => {
       if (!ccRes.ok) {
         const error = await ccRes.text();
         console.error('Resend API error (CC email):', error);
-        // We don't return error here as main email was sent successfully
+        // Log failed CC email attempt
+        await supabase.from('email_logs').insert({
+          recipient: cc.join(', '),
+          cc: null,
+          country,
+          risk_level,
+          sent_by: user_id,
+          status: 'failed',
+          error_message: error
+        });
+      } else {
+        // Log successful CC email
+        await supabase.from('email_logs').insert({
+          recipient: cc.join(', '),
+          cc: null,
+          country,
+          risk_level,
+          sent_by: user_id,
+          status: 'sent',
+          sent_at: new Date().toISOString()
+        });
       }
     }
 
@@ -99,10 +134,8 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error) {
     console.error("Error in send-risk-assessment function:", error);
     return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
+      status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-};
-
-serve(handler);
+});
