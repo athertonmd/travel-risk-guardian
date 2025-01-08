@@ -34,6 +34,9 @@ const RiskNotificationLog = () => {
   const { data: emailLogs, isLoading } = useQuery({
     queryKey: ['email-logs'],
     queryFn: async () => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error('Not authenticated');
+
       const { data, error } = await supabase
         .from('email_logs')
         .select(`
@@ -42,6 +45,7 @@ const RiskNotificationLog = () => {
             email
           )
         `)
+        .eq('sent_by', user.user.id)
         .order('sent_at', { ascending: false });
 
       if (error) {

@@ -35,7 +35,7 @@ serve(async (req) => {
       <p>${information}</p>
     `;
 
-    // Send to main recipient
+    // Prepare email data
     const mainEmailData = {
       from: "Risk Assessment <onboarding@resend.dev>",
       to,
@@ -58,28 +58,31 @@ serve(async (req) => {
 
       if (!mainRes.ok) {
         const error = await mainRes.text();
-        console.error('Resend API error (main email):', error);
+        console.error('Resend API error:', error);
         
         // Log failed email attempt
         const { error: logError } = await supabase.from('email_logs').insert({
           recipient: to,
-          cc: cc ? cc.split(',').map(email => email.trim()) : null,
+          cc: cc ? cc : null,
           country,
           risk_level: formattedRiskLevel,
           sent_by: user_id,
           status: 'failed',
-          error_message: error
+          error_message: error,
+          sent_at: new Date().toISOString()
         });
 
-        if (logError) console.error('Error logging failed email:', logError);
+        if (logError) {
+          console.error('Error logging failed email:', logError);
+        }
 
         throw new Error(error);
       }
 
-      // Log successful main email
+      // Log successful email
       const { error: logError } = await supabase.from('email_logs').insert({
         recipient: to,
-        cc: cc ? cc.split(',').map(email => email.trim()) : null,
+        cc: cc ? cc : null,
         country,
         risk_level: formattedRiskLevel,
         sent_by: user_id,
