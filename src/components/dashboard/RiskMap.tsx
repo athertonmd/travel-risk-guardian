@@ -27,8 +27,24 @@ const RiskMap = ({ assessments, searchTerm, onCountryClick }: RiskMapProps) => {
   const { handleSearch } = useMapSearch(map, sourceLoadedRef, searchTerm, assessments);
   useMapSetup(map, sourceLoadedRef, assessments, handleSearch, onCountryClick);
 
+  if (isLoading) {
+    return (
+      <MapContainer isLoading={true}>
+        <div ref={mapContainer} className="w-full h-full" />
+      </MapContainer>
+    );
+  }
+
+  if (error) {
+    return (
+      <MapContainer error={error}>
+        <div ref={mapContainer} className="w-full h-full" />
+      </MapContainer>
+    );
+  }
+
   return (
-    <MapContainer isLoading={isLoading} error={error}>
+    <MapContainer>
       <div ref={mapContainer} className="w-full h-full" />
     </MapContainer>
   );
