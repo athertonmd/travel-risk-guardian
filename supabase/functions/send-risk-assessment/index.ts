@@ -48,15 +48,19 @@ serve(async (req) => {
       throw new Error('Could not find user email');
     }
 
+    // During testing, we can only send to the verified email
+    const testingMode = true; // Set this to false after domain verification
+    const recipientEmail = testingMode ? 'athertonmd@gmail.com' : to;
+
     // Prepare email data using Resend's default domain
     const mainEmailData = {
       from: 'Travel Risk Guardian <onboarding@resend.dev>',
-      to,
+      to: recipientEmail,
       subject: `Risk Assessment - ${country}`,
       html,
     };
 
-    if (cc && cc.length > 0) {
+    if (!testingMode && cc && cc.length > 0) {
       mainEmailData.cc = cc;
     }
 
