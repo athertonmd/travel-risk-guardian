@@ -14,6 +14,19 @@ export const useMapSearch = (
     searchTermRef.current = searchTerm;
   }, [searchTerm]);
 
+  const resetMapPosition = () => {
+    const mapInstance = map.current;
+    if (!mapInstance?.isStyleLoaded()) return;
+
+    mapInstance.easeTo({
+      center: [15, 50],
+      zoom: 3.5,
+      pitch: 45,
+      bearing: 0,
+      duration: 2000
+    });
+  };
+
   const handleSearch = () => {
     const mapInstance = map.current;
     if (!mapInstance?.isStyleLoaded() || !sourceLoadedRef.current) {
@@ -22,7 +35,10 @@ export const useMapSearch = (
     }
 
     const currentSearchTerm = searchTermRef.current.toLowerCase();
-    if (!currentSearchTerm) return;
+    if (!currentSearchTerm) {
+      resetMapPosition();
+      return;
+    }
 
     const searchedAssessment = assessments.find(
       assessment => assessment.country.toLowerCase().includes(currentSearchTerm)
