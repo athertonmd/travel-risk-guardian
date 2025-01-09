@@ -1,12 +1,53 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { NotificationsTable } from "@/components/notifications/NotificationsTable";
 import { useEmailLogs } from "@/hooks/useEmailLogs";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 const RiskNotificationLog = () => {
   const navigate = useNavigate();
   const { emailLogs, isLoading } = useEmailLogs();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error("Session check error:", error);
+        toast({
+          title: "Authentication Error",
+          description: "Please sign in again to continue.",
+          variant: "destructive",
+        });
+        navigate('/auth');
+        return;
+      }
+
+      if (!session) {
+        toast({
+          title: "Access Denied",
+          description: "You must be signed in to view this page.",
+          variant: "destructive",
+        });
+        navigate('/auth');
+        return;
+      }
+    };
+
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        navigate('/auth');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate, toast]);
 
   return (
     <div className="p-6 space-y-6">
