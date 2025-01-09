@@ -73,7 +73,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-full w-full">
+    <div className="w-full">
       <div className="p-6">
         <DashboardHeader />
         
