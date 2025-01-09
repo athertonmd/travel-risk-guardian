@@ -8,7 +8,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 export const SidebarSignOut = () => {
@@ -17,22 +17,33 @@ export const SidebarSignOut = () => {
 
   const handleSignOut = async () => {
     try {
-      // Clear any stored session data first
-      localStorage.removeItem('supabase.auth.token');
+      // First check if we have a session
+      const { data: { session } } = await supabase.auth.getSession();
       
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error("Sign out error:", error);
-        toast({
-          title: "Sign out error",
-          description: "There was an issue signing out. You will be redirected to the login page.",
-          variant: "destructive",
-        });
+      if (session) {
+        // If we have a session, try to sign out
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+      } else {
+        // If no session exists, just clear local storage and redirect
+        console.log("No active session found, clearing local storage");
       }
-    } catch (error) {
+
+      // Clear any stored session data
+      localStorage.clear();
+      
+      // Redirect to auth page
+      navigate('/auth');
+      
+    } catch (error: any) {
       console.error("Sign out error:", error);
-    } finally {
-      // Always redirect to auth page, even if there was an error
+      toast({
+        title: "Sign out notification",
+        description: "You have been signed out. Redirecting to login page.",
+        variant: "default",
+      });
+      
+      // Still redirect to auth page even if there's an error
       navigate('/auth');
     }
   };
