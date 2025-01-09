@@ -34,7 +34,10 @@ export const sendEmail = async (emailData: EmailData, logData: LogData) => {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
-      body: JSON.stringify(emailData),
+      body: JSON.stringify({
+        ...emailData,
+        from: 'Travel Risk Guardian <notifications@tripguardian.netlify.app>'
+      }),
     });
 
     if (!res.ok) {
