@@ -8,14 +8,33 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
+import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 export const SidebarSignOut = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate('/auth');
+    try {
+      // Clear any stored session data first
+      localStorage.removeItem('supabase.auth.token');
+      
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Sign out error:", error);
+        toast({
+          title: "Sign out error",
+          description: "There was an issue signing out. You will be redirected to the login page.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Sign out error:", error);
+    } finally {
+      // Always redirect to auth page, even if there was an error
+      navigate('/auth');
+    }
   };
 
   return (
