@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardSearch } from "@/components/dashboard/DashboardSearch";
 import { RiskAssessmentGrid } from "@/components/dashboard/RiskAssessmentGrid";
@@ -11,68 +11,21 @@ import { useToast } from "@/components/ui/use-toast";
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const session = useSession();
+  const supabase = useSupabaseClient();
   const [searchTerm, setSearchTerm] = useState("");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Check authentication status
   useEffect(() => {
-    let mounted = true;
+    if (!session) {
+      navigate('/auth');
+    }
+  }, [session, navigate]);
 
-    const checkAuth = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error("Auth error:", error);
-          toast({
-            title: "Authentication Error",
-            description: "Please sign in again",
-            variant: "destructive",
-          });
-          navigate('/auth');
-          return;
-        }
-
-        if (!session) {
-          navigate('/auth');
-          return;
-        }
-
-        if (mounted) {
-          setIsAuthenticated(true);
-        }
-      } catch (error) {
-        console.error("Session check error:", error);
-        navigate('/auth');
-      }
-    };
-
-    checkAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT' || !session) {
-        if (mounted) {
-          setIsAuthenticated(false);
-          navigate('/auth');
-        }
-      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        if (mounted) {
-          setIsAuthenticated(true);
-        }
-      }
-    });
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, [navigate, toast]);
-
-  // Only fetch data if authenticated
-  const { data: assessments = [], isLoading } = useQuery({
+  // Fetch risk assessments data
+  const { data: assessments = [] } = useQuery({
     queryKey: ['risk-assessments'],
     queryFn: async () => {
-      if (!isAuthenticated) return [];
+      if (!session) return [];
       
       const { data, error } = await supabase
         .from('risk_assessments')
@@ -90,7 +43,7 @@ const Dashboard = () => {
       
       return data;
     },
-    enabled: isAuthenticated,
+    enabled: !!session,
   });
 
   const handleCountryClick = (country: string) => {
@@ -105,7 +58,7 @@ const Dashboard = () => {
     );
   });
 
-  if (!isAuthenticated) {
+  if (!session) {
     return null;
   }
 
