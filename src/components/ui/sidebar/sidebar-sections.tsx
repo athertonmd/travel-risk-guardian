@@ -1,5 +1,4 @@
 import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
 import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
@@ -73,12 +72,10 @@ SidebarGroup.displayName = "SidebarGroup"
 
 export const SidebarGroupLabel = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<"div"> & { asChild?: boolean }
->(({ className, asChild = false, ...props }, ref) => {
-  const Comp = asChild ? Slot : "div"
-
+  React.ComponentProps<"div">
+>(({ className, ...props }, ref) => {
   return (
-    <Comp
+    <div
       ref={ref}
       data-sidebar="group-label"
       className={cn(
@@ -107,7 +104,7 @@ SidebarGroupContent.displayName = "SidebarGroupContent"
 
 export const SidebarInput = React.forwardRef<
   React.ElementRef<typeof Input>,
-  React.ComponentProps<typeof Input>
+  React.ComponentPropsWithoutRef<typeof Input>
 >(({ className, ...props }, ref) => {
   return (
     <Input
@@ -125,7 +122,7 @@ SidebarInput.displayName = "SidebarInput"
 
 export const SidebarSeparator = React.forwardRef<
   React.ElementRef<typeof Separator>,
-  React.ComponentProps<typeof Separator>
+  React.ComponentPropsWithoutRef<typeof Separator>
 >(({ className, ...props }, ref) => {
   return (
     <Separator
@@ -140,7 +137,7 @@ SidebarSeparator.displayName = "SidebarSeparator"
 
 export const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
-  React.ComponentProps<typeof Button>
+  React.ComponentPropsWithoutRef<typeof Button>
 >(({ className, onClick, ...props }, ref) => {
   const { toggleSidebar } = useSidebar()
 
@@ -157,7 +154,7 @@ export const SidebarTrigger = React.forwardRef<
       }}
       {...props}
     >
-      <PanelLeft />
+      <PanelLeft className="h-4 w-4" />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )
@@ -166,10 +163,10 @@ SidebarTrigger.displayName = "SidebarTrigger"
 
 export const SidebarInset = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<"main">
+  React.ComponentProps<"div">
 >(({ className, ...props }, ref) => {
   return (
-    <main
+    <div
       ref={ref}
       className={cn(
         "relative flex min-h-svh flex-1 flex-col bg-background",
@@ -183,13 +180,15 @@ export const SidebarInset = React.forwardRef<
 SidebarInset.displayName = "SidebarInset"
 
 export const SidebarMenuSkeleton = React.forwardRef<
-  React.ElementRef<typeof Skeleton>,
-  React.ComponentProps<typeof Skeleton>
+  HTMLDivElement,
+  React.ComponentProps<"div">
 >(({ className, ...props }, ref) => (
-  <Skeleton
+  <div
     ref={ref}
     className={cn("h-8 w-full rounded-md", className)}
     {...props}
-  />
+  >
+    <Skeleton className="h-full w-full" />
+  </div>
 ))
 SidebarMenuSkeleton.displayName = "SidebarMenuSkeleton"
