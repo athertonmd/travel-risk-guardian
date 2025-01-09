@@ -18,7 +18,7 @@ function AppContent() {
   const isAuthPage = location.pathname === "/auth";
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <div className="flex min-h-screen w-full">
         {!isAuthPage && <AppSidebar />}
         <Routes>
