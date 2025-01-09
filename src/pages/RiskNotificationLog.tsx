@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { useEffect } from "react";
 import { Database } from "@/integrations/supabase/types";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminHeader } from "@/components/admin/AdminHeader";
@@ -30,6 +31,7 @@ type EmailLog = Database['public']['Tables']['email_logs']['Row'] & {
 
 const RiskNotificationLog = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data: emailLogs, isLoading } = useQuery({
     queryKey: ['email-logs'],
@@ -55,6 +57,29 @@ const RiskNotificationLog = () => {
       return data as EmailLog[];
     },
   });
+
+  // Subscribe to real-time updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'email_logs'
+        },
+        () => {
+          console.log('New email log detected, invalidating query...');
+          queryClient.invalidateQueries({ queryKey: ['email-logs'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   const getRiskLevelBadge = (level: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive"> = {
