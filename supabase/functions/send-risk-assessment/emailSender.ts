@@ -20,23 +20,14 @@ interface LogData {
   country: string;
   risk_level: string;
   sent_by: string;
-  status: 'pending' | 'success' | 'failed';
+  status: 'success' | 'failed';
   error_message?: string;
 }
 
 export const sendEmail = async (emailData: EmailData, logData: LogData) => {
-  console.log('Starting email send process:', { 
-    to: emailData.to, 
-    subject: emailData.subject,
-    resendKeyExists: !!RESEND_API_KEY 
-  });
+  console.log('Sending email with data:', { to: emailData.to, subject: emailData.subject });
 
   try {
-    if (!RESEND_API_KEY) {
-      throw new Error('RESEND_API_KEY is not configured');
-    }
-
-    console.log('Attempting to send email via Resend API');
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -49,41 +40,27 @@ export const sendEmail = async (emailData: EmailData, logData: LogData) => {
       }),
     });
 
-    const responseText = await res.text();
-    console.log('Resend API response:', responseText);
-
     if (!res.ok) {
-      let errorMessage = 'Failed to send email';
-      try {
-        const errorData = JSON.parse(responseText);
-        errorMessage = errorData.message || errorMessage;
-      } catch {
-        errorMessage = responseText || errorMessage;
-      }
-      throw new Error(errorMessage);
+      const error = await res.text();
+      throw new Error(error);
     }
 
-    console.log('Email sent successfully');
     await logEmailAttempt({ ...logData, status: 'success' });
+    const data = await res.json();
     
-    return new Response(responseText, {
+    return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
   } catch (error) {
     console.error('Error sending email:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    
     await logEmailAttempt({ 
       ...logData, 
       status: 'failed',
-      error_message: errorMessage
+      error_message: error.message 
     });
     
-    return new Response(JSON.stringify({ 
-      error: errorMessage,
-      details: "If you're testing, make sure your domain is verified in Resend and you're using a valid email address."
-    }), {
+    return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     });
@@ -96,16 +73,11 @@ const logEmailAttempt = async (logData: LogData) => {
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
-    console.log('Logging email attempt:', logData);
     const { error } = await supabase
       .from('email_logs')
       .insert([logData]);
 
-    if (error) {
-      console.error('Error logging email attempt:', error);
-      throw error;
-    }
-    console.log('Email attempt logged successfully');
+    if (error) throw error;
   } catch (error) {
     console.error('Error logging email attempt:', error);
   }
