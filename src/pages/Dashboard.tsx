@@ -16,6 +16,8 @@ const Dashboard = () => {
 
   // Check authentication status
   useEffect(() => {
+    let mounted = true;
+
     const checkAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -36,7 +38,9 @@ const Dashboard = () => {
           return;
         }
 
-        setIsAuthenticated(true);
+        if (mounted) {
+          setIsAuthenticated(true);
+        }
       } catch (error) {
         console.error("Session check error:", error);
         navigate('/auth');
@@ -45,13 +49,23 @@ const Dashboard = () => {
 
     checkAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT' || !session) {
-        navigate('/auth');
+        if (mounted) {
+          setIsAuthenticated(false);
+          navigate('/auth');
+        }
+      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        if (mounted) {
+          setIsAuthenticated(true);
+        }
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate, toast]);
 
   // Only fetch data if authenticated
@@ -76,7 +90,7 @@ const Dashboard = () => {
       
       return data;
     },
-    enabled: isAuthenticated, // Only run query when authenticated
+    enabled: isAuthenticated,
   });
 
   const handleCountryClick = (country: string) => {
@@ -92,7 +106,7 @@ const Dashboard = () => {
   });
 
   if (!isAuthenticated) {
-    return null; // Don't render anything while checking auth
+    return null;
   }
 
   return (
