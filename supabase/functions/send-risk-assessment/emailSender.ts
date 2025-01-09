@@ -36,7 +36,7 @@ export const sendEmail = async (emailData: EmailData, logData: LogData) => {
       },
       body: JSON.stringify({
         ...emailData,
-        from: 'Travel Risk Guardian <onboarding@resend.dev>'
+        from: 'Travel Risk Guardian <onboarding@resend.dev>' // Using resend.dev domain
       }),
     });
 
