@@ -17,33 +17,32 @@ export const SidebarSignOut = () => {
 
   const handleSignOut = async () => {
     try {
-      // First check if we have a session
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session) {
-        // If we have a session, try to sign out
-        const { error } = await supabase.auth.signOut();
-        if (error) throw error;
-      } else {
-        // If no session exists, just clear local storage and redirect
-        console.log("No active session found, clearing local storage");
-      }
-
-      // Clear any stored session data
+      // Clear all local storage first to ensure no stale data remains
       localStorage.clear();
       
-      // Redirect to auth page
-      navigate('/auth');
+      // Attempt to sign out from Supabase
+      const { error } = await supabase.auth.signOut();
       
+      if (error) {
+        console.error("Sign out error:", error);
+        // Show error toast but still redirect
+        toast({
+          title: "Sign out status",
+          description: "You have been signed out. Redirecting to login page.",
+          variant: "default",
+        });
+      }
+
     } catch (error: any) {
       console.error("Sign out error:", error);
+      // Show error toast but still redirect
       toast({
-        title: "Sign out notification",
+        title: "Sign out status",
         description: "You have been signed out. Redirecting to login page.",
         variant: "default",
       });
-      
-      // Still redirect to auth page even if there's an error
+    } finally {
+      // Always redirect to auth page, regardless of any errors
       navigate('/auth');
     }
   };
