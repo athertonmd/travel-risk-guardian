@@ -62,10 +62,16 @@ export const SidebarProvider = React.forwardRef<
         } else {
           _setOpen(openState)
         }
+        // Store the state in a cookie
         document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
       },
       [setOpenProp, open]
     )
+
+    // Initialize sidebar state from defaultOpen prop
+    React.useEffect(() => {
+      _setOpen(defaultOpen)
+    }, [defaultOpen])
 
     const toggleSidebar = React.useCallback(() => {
       return isMobile
