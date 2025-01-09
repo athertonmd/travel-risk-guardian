@@ -46,16 +46,18 @@ export const useEmailLogs = () => {
             });
             navigate('/auth');
           }
-          throw error;
+          return null;
         }
+        
         return data;
       } catch (error) {
         console.error('Error in email logs query:', error);
         return null;
       }
     },
-    retry: false,
-    refetchOnWindowFocus: false
+    retry: 0,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true
   });
 
   useEffect(() => {

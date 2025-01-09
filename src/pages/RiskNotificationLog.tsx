@@ -12,18 +12,29 @@ const RiskNotificationLog = () => {
   const { emailLogs, isLoading } = useEmailLogs();
 
   useEffect(() => {
+    let mounted = true;
+
     const checkAuth = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
-      if (error || !session) {
-        console.error("Session check error:", error);
-        toast({
-          title: "Authentication Error",
-          description: "Please sign in again to continue.",
-          variant: "destructive",
-        });
-        navigate('/auth');
-        return;
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error || !session) {
+          console.error("Session check error:", error);
+          if (mounted) {
+            toast({
+              title: "Authentication Error",
+              description: "Please sign in again to continue.",
+              variant: "destructive",
+            });
+            navigate('/auth');
+          }
+          return;
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+        if (mounted) {
+          navigate('/auth');
+        }
       }
     };
 
@@ -31,11 +42,16 @@ const RiskNotificationLog = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT' || !session) {
-        navigate('/auth');
+        if (mounted) {
+          navigate('/auth');
+        }
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   return (
