@@ -22,11 +22,11 @@ function AppContent() {
       <SidebarProvider defaultOpen={true}>
         <div className="flex min-h-screen bg-background">
           {!isAuthPage && (
-            <div className="h-full">
+            <div className="h-full shrink-0">
               <AppSidebar />
             </div>
           )}
-          <main className="flex-1">
+          <main className="flex-1 pl-[250px]">
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
