@@ -1,11 +1,15 @@
 import * as React from 'react';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useSidebarState } from '@/hooks/useSidebarState';
 
 interface SidebarContextValue {
   open: boolean;
   setOpen: (open: boolean) => void;
   toggleSidebar: () => void;
+  isMobile: boolean;
+  state: "open" | "collapsed";
+  openMobile: boolean;
+  setOpenMobile: (open: boolean) => void;
 }
 
 const SidebarContext = React.createContext<SidebarContextValue | undefined>(
@@ -25,19 +29,26 @@ export function SidebarProvider({
   open: openProp,
   onOpenChange: setOpenProp,
 }: SidebarProviderProps) {
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
+  const [openMobile, setOpenMobile] = React.useState(false);
   const { open, setOpen, toggleSidebar } = useSidebarState({
     defaultOpen: isMobile ? false : defaultOpen,
     setOpenProp,
   });
+
+  const state = open ? "open" : "collapsed";
 
   const value = React.useMemo(
     () => ({
       open: openProp !== undefined ? openProp : open,
       setOpen,
       toggleSidebar,
+      isMobile,
+      state,
+      openMobile,
+      setOpenMobile,
     }),
-    [open, openProp, setOpen, toggleSidebar]
+    [open, openProp, setOpen, toggleSidebar, isMobile, state, openMobile]
   );
 
   return (
