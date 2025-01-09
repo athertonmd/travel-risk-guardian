@@ -46,7 +46,7 @@ export async function sendEmail(emailData: EmailData, logData: LogData): Promise
       throw new Error('Failed to create email log');
     }
 
-    // Send email using Resend
+    // Send email using Resend with the temporary resend.dev domain
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -55,11 +55,12 @@ export async function sendEmail(emailData: EmailData, logData: LogData): Promise
       },
       body: JSON.stringify({
         ...emailData,
-        from: 'Travel Risk Guardian <onboarding@resend.dev>', // Using resend.dev domain for testing
+        from: 'Travel Risk Guardian <onboarding@resend.dev>', // Using resend.dev domain temporarily
       }),
     });
 
     const responseData = await res.json();
+    console.log('Resend API response:', responseData);
 
     if (!res.ok) {
       // Update log with failed status
