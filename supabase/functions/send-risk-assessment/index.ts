@@ -18,7 +18,7 @@ interface RequestBody {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
@@ -34,8 +34,8 @@ serve(async (req) => {
     const html = generateEmailTemplate({ country, risk_level, information });
 
     const emailData = {
-      from: 'Travel Risk Guardian <notifications@tripguardian.netlify.app>',
-      to,
+      from: 'Travel Risk Guardian <onboarding@resend.dev>',
+      to: 'athertonmd@gmail.com', // Temporarily set to your verified email for testing
       cc,
       subject: `Risk Assessment - ${country}`,
       html,
@@ -52,11 +52,26 @@ serve(async (req) => {
 
     return await sendEmail(emailData, logData);
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in send-risk-assessment function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    
+    // Check if the error is from Resend's API
+    let errorMessage = error.message;
+    try {
+      if (typeof error.message === 'string' && error.message.includes('{')) {
+        const parsedError = JSON.parse(error.message);
+        errorMessage = parsedError.message || error.message;
+      }
+    } catch {
+      // If parsing fails, use the original error message
+    }
+
+    return new Response(JSON.stringify({ 
+      error: errorMessage,
+      details: "Currently in testing mode - emails will be sent to the verified email address only."
+    }), {
       status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });

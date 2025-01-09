@@ -4,6 +4,7 @@ import { Mail } from "lucide-react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -40,7 +41,7 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information }: 
 
       const ccEmails = data.cc ? data.cc.split(',').map(email => email.trim()) : [];
       
-      const { error } = await supabase.functions.invoke('send-risk-assessment', {
+      const { error, data: response } = await supabase.functions.invoke('send-risk-assessment', {
         body: {
           to: data.email,
           cc: ccEmails,
@@ -55,14 +56,14 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information }: 
 
       toast({
         title: "Success",
-        description: "Risk assessment sent successfully",
+        description: "Risk assessment sent successfully (Note: Currently in testing mode - emails will be sent to the verified email address only)",
       });
       setOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Send email error:', error);
       toast({
         title: "Error",
-        description: "Failed to send risk assessment",
+        description: error.message || "Failed to send risk assessment",
         variant: "destructive",
       });
     }
@@ -79,6 +80,9 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information }: 
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Email Risk Assessment</DialogTitle>
+          <DialogDescription>
+            Note: Currently in testing mode - all emails will be sent to the verified email address only.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
