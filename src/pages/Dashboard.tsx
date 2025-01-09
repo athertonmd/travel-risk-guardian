@@ -1,49 +1,26 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
+import { supabase } from "@/integrations/supabase/client";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardSearch } from "@/components/dashboard/DashboardSearch";
 import { RiskAssessmentGrid } from "@/components/dashboard/RiskAssessmentGrid";
 import RiskMap from "@/components/dashboard/RiskMap";
-import { useToast } from "@/components/ui/use-toast";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const session = useSession();
-  const supabase = useSupabaseClient();
   const [searchTerm, setSearchTerm] = useState("");
 
-  useEffect(() => {
-    if (!session) {
-      navigate('/auth');
-    }
-  }, [session, navigate]);
-
-  // Fetch risk assessments data
-  const { data: assessments = [] } = useQuery({
+  const { data: assessments = [], isLoading } = useQuery({
     queryKey: ['risk-assessments'],
     queryFn: async () => {
-      if (!session) return [];
-      
       const { data, error } = await supabase
         .from('risk_assessments')
         .select('*');
       
-      if (error) {
-        console.error("Fetch error:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch risk assessments",
-          variant: "destructive",
-        });
-        throw error;
-      }
-      
+      if (error) throw error;
       return data;
     },
-    enabled: !!session,
   });
 
   const handleCountryClick = (country: string) => {
@@ -58,9 +35,24 @@ const Dashboard = () => {
     );
   });
 
-  if (!session) {
-    return null;
-  }
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/auth');
+      }
+    };
+    
+    checkUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        navigate('/auth');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   return (
     <div className="flex-1 w-full">
