@@ -20,9 +20,13 @@ function AppContent() {
   return (
     <TooltipProvider>
       <SidebarProvider defaultOpen={true}>
-        <div className="flex min-h-screen bg-background">
-          {!isAuthPage && <AppSidebar />}
-          <main className="flex-1 overflow-y-auto">
+        <div className="relative min-h-screen bg-background">
+          {!isAuthPage && (
+            <div className="fixed inset-y-0 z-50">
+              <AppSidebar />
+            </div>
+          )}
+          <main className="min-h-screen">
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
