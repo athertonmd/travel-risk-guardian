@@ -20,7 +20,7 @@ function AppContent() {
 
   return (
     <TooltipProvider>
-      <SidebarProvider defaultOpen={false}>
+      <SidebarProvider defaultOpen={true}>
         <div className="flex min-h-screen w-full">
           {!isAuthPage && <AppSidebar />}
           <Routes>
