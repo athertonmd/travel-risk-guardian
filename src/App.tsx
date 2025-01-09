@@ -23,13 +23,15 @@ function AppContent() {
       <SidebarProvider defaultOpen={true}>
         <div className="flex min-h-screen w-full">
           {!isAuthPage && <AppSidebar />}
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/admin/risk-assessments" element={<Admin />} />
-            <Route path="/admin/notifications" element={<RiskNotificationLog />} />
-          </Routes>
+          <main className="flex-1 relative">
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/admin/risk-assessments" element={<Admin />} />
+              <Route path="/admin/notifications" element={<RiskNotificationLog />} />
+            </Routes>
+          </main>
         </div>
         <Toaster />
       </SidebarProvider>
