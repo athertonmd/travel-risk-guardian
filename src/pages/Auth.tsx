@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthError, AuthApiError, AuthTokenResponse } from "@supabase/supabase-js";
+import { AuthError, AuthApiError } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import AuthBackground from "@/components/auth/AuthBackground";
 import AuthContent from "@/components/auth/AuthContent";
