@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 const corsHeaders = {
@@ -7,7 +7,6 @@ const corsHeaders = {
 };
 
 interface EmailData {
-  from: string;
   to: string;
   cc?: string[];
   subject: string;
@@ -20,14 +19,34 @@ interface LogData {
   country: string;
   risk_level: string;
   sent_by: string;
-  status: 'success' | 'failed';
-  error_message?: string;
+  status: 'pending' | 'sent' | 'failed';
 }
 
-export const sendEmail = async (emailData: EmailData, logData: LogData) => {
-  console.log('Sending email with data:', { to: emailData.to, subject: emailData.subject });
-
+export async function sendEmail(emailData: EmailData, logData: LogData): Promise<Response> {
   try {
+    if (!RESEND_API_KEY) {
+      throw new Error('RESEND_API_KEY is not configured');
+    }
+
+    // Create Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // First, create the email log entry with pending status
+    const { error: logError } = await supabase
+      .from('email_logs')
+      .insert([{
+        ...logData,
+        status: 'pending',
+      }]);
+
+    if (logError) {
+      console.error('Error creating email log:', logError);
+      throw new Error('Failed to create email log');
+    }
+
+    // Send email using Resend
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -36,49 +55,51 @@ export const sendEmail = async (emailData: EmailData, logData: LogData) => {
       },
       body: JSON.stringify({
         ...emailData,
-        from: 'Travel Risk Guardian <onboarding@resend.dev>' // Using resend.dev domain
+        from: 'Travel Risk Guardian <onboarding@resend.dev>', // Using resend.dev domain for testing
       }),
     });
 
+    const responseData = await res.json();
+
     if (!res.ok) {
-      const error = await res.text();
-      throw new Error(error);
+      // Update log with failed status
+      await supabase
+        .from('email_logs')
+        .update({
+          status: 'failed',
+          error_message: responseData.message || 'Failed to send email',
+        })
+        .eq('recipient', logData.recipient)
+        .eq('status', 'pending');
+
+      throw new Error(responseData.message || 'Failed to send email');
     }
 
-    await logEmailAttempt({ ...logData, status: 'success' });
-    const data = await res.json();
-    
-    return new Response(JSON.stringify(data), {
+    // Update log with success status
+    await supabase
+      .from('email_logs')
+      .update({
+        status: 'sent',
+      })
+      .eq('recipient', logData.recipient)
+      .eq('status', 'pending');
+
+    return new Response(JSON.stringify(responseData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
+
   } catch (error) {
-    console.error('Error sending email:', error);
-    await logEmailAttempt({ 
-      ...logData, 
-      status: 'failed',
-      error_message: error.message 
-    });
-    
-    return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
-    });
+    console.error('Error in sendEmail:', error);
+    return new Response(
+      JSON.stringify({
+        error: error.message,
+        details: "Make sure RESEND_API_KEY is configured and you're using the resend.dev domain for testing"
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      }
+    );
   }
-};
-
-const logEmailAttempt = async (logData: LogData) => {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-  const supabase = createClient(supabaseUrl, supabaseKey);
-
-  try {
-    const { error } = await supabase
-      .from('email_logs')
-      .insert([logData]);
-
-    if (error) throw error;
-  } catch (error) {
-    console.error('Error logging email attempt:', error);
-  }
-};
+}

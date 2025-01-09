@@ -34,8 +34,7 @@ serve(async (req) => {
     const html = generateEmailTemplate({ country, risk_level, information });
 
     const emailData = {
-      from: 'Travel Risk Guardian <onboarding@resend.dev>',
-      to: 'athertonmd@gmail.com', // Temporarily set to your verified email for testing
+      to,
       cc,
       subject: `Risk Assessment - ${country}`,
       html,
@@ -55,7 +54,6 @@ serve(async (req) => {
   } catch (error: any) {
     console.error('Error in send-risk-assessment function:', error);
     
-    // Check if the error is from Resend's API
     let errorMessage = error.message;
     try {
       if (typeof error.message === 'string' && error.message.includes('{')) {
@@ -66,10 +64,7 @@ serve(async (req) => {
       // If parsing fails, use the original error message
     }
 
-    return new Response(JSON.stringify({ 
-      error: errorMessage,
-      details: "Currently in testing mode - emails will be sent to the verified email address only."
-    }), {
+    return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
