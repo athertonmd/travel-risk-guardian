@@ -10,10 +10,42 @@ import RiskMap from "@/components/dashboard/RiskMap";
 const Dashboard = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error || !session) {
+          console.error("Session error:", error);
+          navigate('/auth');
+          return;
+        }
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error("Auth error:", error);
+        navigate('/auth');
+      }
+    };
+
+    checkSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        navigate('/auth');
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   const { data: assessments = [], isLoading } = useQuery({
     queryKey: ['risk-assessments'],
     queryFn: async () => {
+      if (!isAuthenticated) return [];
+      
       const { data, error } = await supabase
         .from('risk_assessments')
         .select('*');
@@ -21,6 +53,7 @@ const Dashboard = () => {
       if (error) throw error;
       return data;
     },
+    enabled: isAuthenticated,
   });
 
   const handleCountryClick = (country: string) => {
@@ -35,24 +68,9 @@ const Dashboard = () => {
     );
   });
 
-  useEffect(() => {
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate('/auth');
-      }
-    };
-    
-    checkUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT') {
-        navigate('/auth');
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="flex-1 w-full">

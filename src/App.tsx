@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -18,19 +19,21 @@ function AppContent() {
   const isAuthPage = location.pathname === "/auth";
 
   return (
-    <SidebarProvider defaultOpen={false}>
-      <div className="flex min-h-screen w-full">
-        {!isAuthPage && <AppSidebar />}
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/admin/risk-assessments" element={<Admin />} />
-          <Route path="/admin/notifications" element={<RiskNotificationLog />} />
-        </Routes>
-      </div>
-      <Toaster />
-    </SidebarProvider>
+    <TooltipProvider>
+      <SidebarProvider defaultOpen={false}>
+        <div className="flex min-h-screen w-full">
+          {!isAuthPage && <AppSidebar />}
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/admin/risk-assessments" element={<Admin />} />
+            <Route path="/admin/notifications" element={<RiskNotificationLog />} />
+          </Routes>
+        </div>
+        <Toaster />
+      </SidebarProvider>
+    </TooltipProvider>
   );
 }
 
