@@ -5,32 +5,21 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { NotificationsTable } from "@/components/notifications/NotificationsTable";
 import { useEmailLogs } from "@/hooks/useEmailLogs";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/use-toast";
 
 const RiskNotificationLog = () => {
   const navigate = useNavigate();
   const { emailLogs, isLoading } = useEmailLogs();
-  const { toast } = useToast();
 
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
       
-      if (error) {
+      if (error || !session) {
         console.error("Session check error:", error);
         toast({
           title: "Authentication Error",
           description: "Please sign in again to continue.",
-          variant: "destructive",
-        });
-        navigate('/auth');
-        return;
-      }
-
-      if (!session) {
-        toast({
-          title: "Access Denied",
-          description: "You must be signed in to view this page.",
           variant: "destructive",
         });
         navigate('/auth');
@@ -47,7 +36,7 @@ const RiskNotificationLog = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, toast]);
+  }, [navigate]);
 
   return (
     <div className="p-6 space-y-6">
