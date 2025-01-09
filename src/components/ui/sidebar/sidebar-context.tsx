@@ -36,7 +36,7 @@ export function SidebarProvider({
     setOpenProp,
   });
 
-  const state = open ? "open" : "collapsed";
+  const state: "open" | "collapsed" = open ? "open" : "collapsed";
 
   const value = React.useMemo(
     () => ({
