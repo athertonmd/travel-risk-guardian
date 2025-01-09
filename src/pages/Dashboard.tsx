@@ -73,11 +73,11 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="flex-1 w-full">
+    <div className="min-h-full w-full">
       <div className="p-6">
         <DashboardHeader />
         
-        <div className="max-w-7xl mx-auto space-y-8">
+        <div className="mx-auto max-w-7xl space-y-8">
           <DashboardSearch 
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}

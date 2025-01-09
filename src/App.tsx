@@ -20,9 +20,9 @@ function AppContent() {
   return (
     <TooltipProvider>
       <SidebarProvider defaultOpen={true}>
-        <div className="flex h-screen w-full overflow-hidden">
+        <div className="flex h-screen w-full overflow-hidden bg-background">
           {!isAuthPage && <AppSidebar />}
-          <div className="flex-1 overflow-auto">
+          <main className="flex-1 overflow-auto p-0">
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
@@ -30,7 +30,7 @@ function AppContent() {
               <Route path="/admin/risk-assessments" element={<Admin />} />
               <Route path="/admin/notifications" element={<RiskNotificationLog />} />
             </Routes>
-          </div>
+          </main>
         </div>
         <Toaster />
       </SidebarProvider>
