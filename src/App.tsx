@@ -13,7 +13,6 @@ import "./App.css";
 
 const queryClient = new QueryClient();
 
-// Wrapper component to handle conditional sidebar rendering
 function AppContent() {
   const location = useLocation();
   const isAuthPage = location.pathname === "/auth";
@@ -21,9 +20,9 @@ function AppContent() {
   return (
     <TooltipProvider>
       <SidebarProvider defaultOpen={true}>
-        <div className="flex min-h-screen w-full">
+        <div className="flex h-screen w-full overflow-hidden">
           {!isAuthPage && <AppSidebar />}
-          <main className="flex-1 relative">
+          <div className="flex-1 overflow-auto">
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
@@ -31,7 +30,7 @@ function AppContent() {
               <Route path="/admin/risk-assessments" element={<Admin />} />
               <Route path="/admin/notifications" element={<RiskNotificationLog />} />
             </Routes>
-          </main>
+          </div>
         </div>
         <Toaster />
       </SidebarProvider>
