@@ -31,14 +31,11 @@ serve(async (req) => {
 
     console.log('Processing request for:', { country, risk_level, to });
 
-    const testingMode = true; // Keep this true until domain is verified
-    const recipientEmail = testingMode ? 'athertonmd@gmail.com' : to;
-
     const html = generateEmailTemplate({ country, risk_level, information });
 
     const emailData = {
       from: 'Travel Risk Guardian <notifications@tripguardian.netlify.app>',
-      to: recipientEmail,
+      to,
       cc,
       subject: `Risk Assessment - ${country}`,
       html,
