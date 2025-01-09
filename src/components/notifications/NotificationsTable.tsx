@@ -30,30 +30,6 @@ interface NotificationsTableProps {
 }
 
 export const NotificationsTable = ({ emailLogs, isLoading }: NotificationsTableProps) => {
-  if (isLoading) {
-    return (
-      <TableBody>
-        <TableRow>
-          <TableCell colSpan={7} className="text-center">
-            Loading...
-          </TableCell>
-        </TableRow>
-      </TableBody>
-    );
-  }
-
-  if (!emailLogs?.length) {
-    return (
-      <TableBody>
-        <TableRow>
-          <TableCell colSpan={7} className="text-center">
-            No email logs found
-          </TableCell>
-        </TableRow>
-      </TableBody>
-    );
-  }
-
   return (
     <Table>
       <TableHeader>
@@ -68,23 +44,37 @@ export const NotificationsTable = ({ emailLogs, isLoading }: NotificationsTableP
         </TableRow>
       </TableHeader>
       <TableBody>
-        {emailLogs.map((log) => (
-          <TableRow key={log.id}>
-            <TableCell>
-              {log.sent_at ? format(new Date(log.sent_at), "MMM d, yyyy HH:mm") : "-"}
+        {isLoading ? (
+          <TableRow>
+            <TableCell colSpan={7} className="text-center">
+              Loading...
             </TableCell>
-            <TableCell>
-              <NotificationStatus status={log.status} errorMessage={log.error_message} />
-            </TableCell>
-            <TableCell>{log.recipient}</TableCell>
-            <TableCell>{log.cc?.join(", ") || "-"}</TableCell>
-            <TableCell>{log.country}</TableCell>
-            <TableCell>
-              <RiskLevelBadge level={log.risk_level} />
-            </TableCell>
-            <TableCell>{log.profiles.email}</TableCell>
           </TableRow>
-        ))}
+        ) : !emailLogs?.length ? (
+          <TableRow>
+            <TableCell colSpan={7} className="text-center">
+              No email logs found
+            </TableCell>
+          </TableRow>
+        ) : (
+          emailLogs.map((log) => (
+            <TableRow key={log.id}>
+              <TableCell>
+                {log.sent_at ? format(new Date(log.sent_at), "MMM d, yyyy HH:mm") : "-"}
+              </TableCell>
+              <TableCell>
+                <NotificationStatus status={log.status} errorMessage={log.error_message} />
+              </TableCell>
+              <TableCell>{log.recipient}</TableCell>
+              <TableCell>{log.cc?.join(", ") || "-"}</TableCell>
+              <TableCell>{log.country}</TableCell>
+              <TableCell>
+                <RiskLevelBadge level={log.risk_level} />
+              </TableCell>
+              <TableCell>{log.profiles.email}</TableCell>
+            </TableRow>
+          ))
+        )}
       </TableBody>
     </Table>
   );
