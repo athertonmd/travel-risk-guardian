@@ -89,20 +89,28 @@ serve(async (req) => {
 
     console.log('Sending email to:', to, 'with CC:', cc);
 
-    // Send email using Resend with properly formatted CC array
+    // Prepare email payload
+    const emailPayload = {
+      from: 'Travel Risk Guardian <onboarding@resend.dev>',
+      to,
+      subject: `Risk Assessment - ${country}`,
+      html,
+    };
+
+    // Only add CC if it exists and has items
+    if (cc && cc.length > 0) {
+      console.log('Adding CC recipients:', cc);
+      Object.assign(emailPayload, { cc });
+    }
+
+    // Send email using Resend
     const emailRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
-      body: JSON.stringify({
-        from: 'Travel Risk Guardian <onboarding@resend.dev>',
-        to: to,
-        cc: cc && cc.length > 0 ? cc : undefined,
-        subject: `Risk Assessment - ${country}`,
-        html,
-      }),
+      body: JSON.stringify(emailPayload),
     });
 
     const emailData = await emailRes.json();
@@ -110,17 +118,14 @@ serve(async (req) => {
 
     if (!emailRes.ok) {
       // Update log with failed status for both recipient and CC
-      const updateData = {
-        recipient_status: 'failed',
-        recipient_error_message: emailData.message || 'Failed to send email',
-        cc_status: cc && cc.length > 0 ? 'failed' : null,
-        cc_error_message: cc && cc.length > 0 ? emailData.message || 'Failed to send email' : null,
-        updated_at: new Date().toISOString()
-      };
-
       const { error: updateError } = await supabase
         .from('email_logs')
-        .update(updateData)
+        .update({
+          recipient_status: 'failed',
+          recipient_error_message: emailData.message || 'Failed to send email',
+          cc_status: cc && cc.length > 0 ? 'failed' : null,
+          cc_error_message: cc && cc.length > 0 ? emailData.message || 'Failed to send email' : null
+        })
         .eq('id', logData.id);
 
       if (updateError) {
@@ -133,17 +138,14 @@ serve(async (req) => {
     console.log('Email sent successfully:', emailData);
 
     // Update log with success status for both recipient and CC
-    const updateData = {
-      recipient_status: 'sent',
-      recipient_error_message: null,
-      cc_status: cc && cc.length > 0 ? 'sent' : null,
-      cc_error_message: null,
-      updated_at: new Date().toISOString()
-    };
-
     const { error: updateError } = await supabase
       .from('email_logs')
-      .update(updateData)
+      .update({
+        recipient_status: 'sent',
+        recipient_error_message: null,
+        cc_status: cc && cc.length > 0 ? 'sent' : null,
+        cc_error_message: null
+      })
       .eq('id', logData.id);
 
     if (updateError) {
