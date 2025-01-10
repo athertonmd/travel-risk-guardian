@@ -40,7 +40,7 @@ serve(async (req) => {
       throw new Error('Missing required fields');
     }
 
-    console.log('Creating email log entry for:', { to, country, risk_level, user_id });
+    console.log('Creating email log entry for:', { to, cc, country, risk_level, user_id });
 
     // Create email log entry with pending status
     const { data: logData, error: logError } = await supabase
@@ -86,7 +86,20 @@ serve(async (req) => {
       </div>
     `;
 
-    console.log('Sending email to:', to);
+    console.log('Sending email to:', to, 'with CC:', cc);
+
+    // Prepare email payload
+    const emailPayload = {
+      from: 'Travel Risk Guardian <onboarding@resend.dev>',
+      to: [to],
+      subject: `Risk Assessment - ${country}`,
+      html,
+    };
+
+    // Add CC recipients if they exist
+    if (cc && cc.length > 0) {
+      Object.assign(emailPayload, { cc });
+    }
 
     // Send email using Resend
     const emailRes = await fetch('https://api.resend.com/emails', {
@@ -95,13 +108,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
-      body: JSON.stringify({
-        from: 'Travel Risk Guardian <onboarding@resend.dev>',
-        to: [to],
-        ...(cc && cc.length > 0 && { cc }),
-        subject: `Risk Assessment - ${country}`,
-        html,
-      }),
+      body: JSON.stringify(emailPayload),
     });
 
     const emailData = await emailRes.json();
