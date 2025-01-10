@@ -98,8 +98,8 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         from: 'Travel Risk Guardian <onboarding@resend.dev>',
-        to: to, // Send to single recipient
-        cc: cc && cc.length > 0 ? cc : undefined, // Only include cc if it exists and has items
+        to: to,
+        cc: cc && cc.length > 0 ? cc : undefined,
         subject: `Risk Assessment - ${country}`,
         html,
       }),
@@ -110,14 +110,17 @@ serve(async (req) => {
 
     if (!emailRes.ok) {
       // Update log with failed status for both recipient and CC
+      const updateData = {
+        recipient_status: 'failed',
+        recipient_error_message: emailData.message || 'Failed to send email',
+        cc_status: cc && cc.length > 0 ? 'failed' : null,
+        cc_error_message: cc && cc.length > 0 ? emailData.message || 'Failed to send email' : null,
+        updated_at: new Date().toISOString()
+      };
+
       const { error: updateError } = await supabase
         .from('email_logs')
-        .update({
-          recipient_status: 'failed',
-          recipient_error_message: emailData.message || 'Failed to send email',
-          cc_status: cc && cc.length > 0 ? 'failed' : null,
-          cc_error_message: cc && cc.length > 0 ? emailData.message || 'Failed to send email' : null
-        })
+        .update(updateData)
         .eq('id', logData.id);
 
       if (updateError) {
@@ -130,14 +133,17 @@ serve(async (req) => {
     console.log('Email sent successfully:', emailData);
 
     // Update log with success status for both recipient and CC
+    const updateData = {
+      recipient_status: 'sent',
+      recipient_error_message: null,
+      cc_status: cc && cc.length > 0 ? 'sent' : null,
+      cc_error_message: null,
+      updated_at: new Date().toISOString()
+    };
+
     const { error: updateError } = await supabase
       .from('email_logs')
-      .update({
-        recipient_status: 'sent',
-        recipient_error_message: null,
-        cc_status: cc && cc.length > 0 ? 'sent' : null,
-        cc_error_message: null
-      })
+      .update(updateData)
       .eq('id', logData.id);
 
     if (updateError) {
