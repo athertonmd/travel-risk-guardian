@@ -90,7 +90,7 @@ serve(async (req) => {
 
     // Construct email payload
     const emailPayload = {
-      from: 'Travel Risk Guardian <notifications@your-verified-domain.com>', // Replace with your verified domain
+      from: 'Travel Risk Guardian <onboarding@resend.dev>', // Using Resend's testing domain
       to: [to],
       subject: `Risk Assessment - ${country}`,
       html,
