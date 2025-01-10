@@ -13,12 +13,14 @@ import { RiskLevelBadge } from "./RiskLevelBadge";
 interface EmailLog {
   id: string;
   sent_at: string;
-  status: string;
+  recipient_status: string;
+  recipient_error_message?: string | null;
+  cc_status?: string | null;
+  cc_error_message?: string | null;
   recipient: string;
   cc?: string[];
   country: string;
   risk_level: string;
-  error_message?: string | null;
   profiles: {
     email: string;
   };
@@ -35,7 +37,8 @@ export const NotificationsTable = ({ emailLogs, isLoading }: NotificationsTableP
       <TableHeader>
         <TableRow>
           <TableHead>Date Sent</TableHead>
-          <TableHead>Status</TableHead>
+          <TableHead>Recipient Status</TableHead>
+          <TableHead>CC Status</TableHead>
           <TableHead>Recipient</TableHead>
           <TableHead>CC</TableHead>
           <TableHead>Country</TableHead>
@@ -46,13 +49,13 @@ export const NotificationsTable = ({ emailLogs, isLoading }: NotificationsTableP
       <TableBody>
         {isLoading ? (
           <TableRow>
-            <TableCell colSpan={7} className="text-center">
+            <TableCell colSpan={8} className="text-center">
               Loading...
             </TableCell>
           </TableRow>
         ) : !emailLogs?.length ? (
           <TableRow>
-            <TableCell colSpan={7} className="text-center">
+            <TableCell colSpan={8} className="text-center">
               No email logs found
             </TableCell>
           </TableRow>
@@ -63,7 +66,14 @@ export const NotificationsTable = ({ emailLogs, isLoading }: NotificationsTableP
                 {log.sent_at ? format(new Date(log.sent_at), "MMM d, yyyy HH:mm") : "-"}
               </TableCell>
               <TableCell>
-                <NotificationStatus status={log.status} errorMessage={log.error_message} />
+                <NotificationStatus status={log.recipient_status} errorMessage={log.recipient_error_message} />
+              </TableCell>
+              <TableCell>
+                {log.cc && log.cc.length > 0 ? (
+                  <NotificationStatus status={log.cc_status || 'pending'} errorMessage={log.cc_error_message} />
+                ) : (
+                  "-"
+                )}
               </TableCell>
               <TableCell>{log.recipient}</TableCell>
               <TableCell>{log.cc?.join(", ") || "-"}</TableCell>

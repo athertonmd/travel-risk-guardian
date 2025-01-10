@@ -12,36 +12,42 @@ export type Database = {
       email_logs: {
         Row: {
           cc: string[] | null
+          cc_error_message: string | null
+          cc_status: Database["public"]["Enums"]["email_status"] | null
           country: string
-          error_message: string | null
           id: string
           recipient: string
+          recipient_error_message: string | null
+          recipient_status: Database["public"]["Enums"]["email_status"]
           risk_level: Database["public"]["Enums"]["risk_level"]
           sent_at: string | null
           sent_by: string
-          status: Database["public"]["Enums"]["email_status"]
         }
         Insert: {
           cc?: string[] | null
+          cc_error_message?: string | null
+          cc_status?: Database["public"]["Enums"]["email_status"] | null
           country: string
-          error_message?: string | null
           id?: string
           recipient: string
+          recipient_error_message?: string | null
+          recipient_status: Database["public"]["Enums"]["email_status"]
           risk_level: Database["public"]["Enums"]["risk_level"]
           sent_at?: string | null
           sent_by: string
-          status: Database["public"]["Enums"]["email_status"]
         }
         Update: {
           cc?: string[] | null
+          cc_error_message?: string | null
+          cc_status?: Database["public"]["Enums"]["email_status"] | null
           country?: string
-          error_message?: string | null
           id?: string
           recipient?: string
+          recipient_error_message?: string | null
+          recipient_status?: Database["public"]["Enums"]["email_status"]
           risk_level?: Database["public"]["Enums"]["risk_level"]
           sent_at?: string | null
           sent_by?: string
-          status?: Database["public"]["Enums"]["email_status"]
         }
         Relationships: [
           {
