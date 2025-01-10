@@ -98,7 +98,7 @@ serve(async (req) => {
 
     // Add CC recipients if they exist
     if (cc && cc.length > 0) {
-      Object.assign(emailPayload, { cc });
+      emailPayload.cc = cc;
     }
 
     // Send email using Resend
