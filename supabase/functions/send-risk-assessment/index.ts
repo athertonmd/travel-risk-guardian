@@ -89,19 +89,21 @@ serve(async (req) => {
 
     console.log('Sending email to:', to, 'with CC:', cc);
 
-    // Prepare email payload
-    const emailPayload = {
+    // Construct email payload
+    const emailPayload: any = {
       from: 'Travel Risk Guardian <onboarding@resend.dev>',
-      to,
+      to: [to], // Resend expects an array for recipients
       subject: `Risk Assessment - ${country}`,
       html,
     };
 
-    // Only add CC if it exists and has items
+    // Add CC recipients if they exist
     if (cc && cc.length > 0) {
       console.log('Adding CC recipients:', cc);
-      Object.assign(emailPayload, { cc });
+      emailPayload.cc = cc;
     }
+
+    console.log('Final email payload:', JSON.stringify(emailPayload, null, 2));
 
     // Send email using Resend
     const emailRes = await fetch('https://api.resend.com/emails', {
