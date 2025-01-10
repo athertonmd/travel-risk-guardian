@@ -123,7 +123,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      email_status: "sent" | "failed"
+      email_status: "sent" | "failed" | "pending"
       risk_level: "low" | "medium" | "high" | "extreme"
       user_role: "user" | "admin"
     }

@@ -51,7 +51,8 @@ serve(async (req) => {
         country,
         risk_level,
         sent_by: user_id,
-        status: 'pending'
+        status: 'pending',
+        sent_at: new Date().toISOString()
       }])
       .select()
       .single();
@@ -107,13 +108,17 @@ serve(async (req) => {
 
     if (!emailRes.ok) {
       // Update log with failed status
-      await supabase
+      const { error: updateError } = await supabase
         .from('email_logs')
         .update({
           status: 'failed',
-          error_message: emailData.message || 'Failed to send email',
+          error_message: emailData.message || 'Failed to send email'
         })
         .eq('id', logData.id);
+
+      if (updateError) {
+        console.error('Error updating email log status to failed:', updateError);
+      }
 
       throw new Error(emailData.message || 'Failed to send email');
     }
@@ -121,12 +126,17 @@ serve(async (req) => {
     console.log('Email sent successfully:', emailData);
 
     // Update log with success status
-    await supabase
+    const { error: updateError } = await supabase
       .from('email_logs')
       .update({
         status: 'sent',
+        error_message: null
       })
       .eq('id', logData.id);
+
+    if (updateError) {
+      console.error('Error updating email log status to sent:', updateError);
+    }
 
     return new Response(JSON.stringify(emailData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
