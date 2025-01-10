@@ -53,7 +53,6 @@ serve(async (req) => {
         sent_by: user_id,
         recipient_status: 'pending',
         cc_status: cc && cc.length > 0 ? 'pending' : null,
-        sent_at: new Date().toISOString()
       }])
       .select()
       .single();
@@ -90,9 +89,9 @@ serve(async (req) => {
     console.log('Sending email to:', to, 'with CC:', cc);
 
     // Construct email payload
-    const emailPayload: any = {
-      from: 'Travel Risk Guardian <onboarding@resend.dev>',
-      to: [to], // Resend expects an array for recipients
+    const emailPayload = {
+      from: 'Travel Risk Guardian <notifications@your-verified-domain.com>', // Replace with your verified domain
+      to: [to],
       subject: `Risk Assessment - ${country}`,
       html,
     };
@@ -119,8 +118,8 @@ serve(async (req) => {
     console.log('Resend API response:', emailData);
 
     if (!emailRes.ok) {
-      // Update log with failed status for both recipient and CC
-      const { error: updateError } = await supabase
+      // Update log with failed status
+      await supabase
         .from('email_logs')
         .update({
           recipient_status: 'failed',
@@ -130,17 +129,11 @@ serve(async (req) => {
         })
         .eq('id', logData.id);
 
-      if (updateError) {
-        console.error('Error updating email log status to failed:', updateError);
-      }
-
       throw new Error(emailData.message || 'Failed to send email');
     }
 
-    console.log('Email sent successfully:', emailData);
-
-    // Update log with success status for both recipient and CC
-    const { error: updateError } = await supabase
+    // Update log with success status
+    await supabase
       .from('email_logs')
       .update({
         recipient_status: 'sent',
@@ -149,10 +142,6 @@ serve(async (req) => {
         cc_error_message: null
       })
       .eq('id', logData.id);
-
-    if (updateError) {
-      console.error('Error updating email log status to sent:', updateError);
-    }
 
     return new Response(JSON.stringify(emailData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
