@@ -12,7 +12,8 @@ interface NotificationStatusProps {
 }
 
 export const NotificationStatus = ({ status, errorMessage }: NotificationStatusProps) => {
-  const isSent = status.toLowerCase() === 'sent';
+  // Check for any variation of "sent" status
+  const isSent = status?.toLowerCase().includes('sent');
 
   return (
     <TooltipProvider>
