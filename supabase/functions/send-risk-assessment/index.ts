@@ -89,7 +89,7 @@ serve(async (req) => {
 
     console.log('Sending email to:', to, 'with CC:', cc);
 
-    // Send email using Resend
+    // Send email using Resend with properly formatted CC array
     const emailRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -98,8 +98,8 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         from: 'Travel Risk Guardian <onboarding@resend.dev>',
-        to: [to],
-        cc: cc,
+        to: to, // Send to single recipient
+        cc: cc && cc.length > 0 ? cc : undefined, // Only include cc if it exists and has items
         subject: `Risk Assessment - ${country}`,
         html,
       }),
