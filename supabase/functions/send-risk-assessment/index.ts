@@ -34,6 +34,8 @@ serve(async (req) => {
 
     const { to, cc, country, risk_level, information, user_id } = await req.json() as RequestBody;
 
+    console.log('Creating email log entry for:', { to, country, risk_level, user_id });
+
     // Create email log entry with pending status
     const { error: logError } = await supabase
       .from('email_logs')
@@ -71,6 +73,8 @@ serve(async (req) => {
       </div>
     `;
 
+    console.log('Sending email to:', to);
+
     // Send email using Resend
     const emailRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -102,6 +106,8 @@ serve(async (req) => {
 
       throw new Error(emailData.message || 'Failed to send email');
     }
+
+    console.log('Email sent successfully:', emailData);
 
     // Update log with success status
     await supabase
