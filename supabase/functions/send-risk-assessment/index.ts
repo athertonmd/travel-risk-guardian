@@ -86,29 +86,20 @@ serve(async (req) => {
       </div>
     `;
 
-    console.log('Preparing email payload with recipient:', to, 'and CC:', cc);
+    console.log('Sending email to:', to, 'with CC:', cc);
 
     // Prepare email payload
-    const emailPayload: {
-      from: string;
-      to: string[];
-      cc?: string[];
-      subject: string;
-      html: string;
-    } = {
+    const emailPayload = {
       from: 'Travel Risk Guardian <onboarding@resend.dev>',
       to: [to],
       subject: `Risk Assessment - ${country}`,
       html,
     };
 
-    // Add CC recipients if they exist and are not empty
-    if (cc && Array.isArray(cc) && cc.length > 0) {
+    // Add CC recipients if they exist
+    if (cc && cc.length > 0) {
       emailPayload.cc = cc;
-      console.log('Added CC recipients:', cc);
     }
-
-    console.log('Final email payload:', emailPayload);
 
     // Send email using Resend
     const emailRes = await fetch('https://api.resend.com/emails', {
@@ -121,7 +112,6 @@ serve(async (req) => {
     });
 
     const emailData = await emailRes.json();
-    console.log('Resend API response:', emailData);
 
     if (!emailRes.ok) {
       // Update log with failed status
