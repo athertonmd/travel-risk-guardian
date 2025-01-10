@@ -32,12 +32,18 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { to, cc, country, risk_level, information, user_id } = await req.json() as RequestBody;
+    // Parse and validate request body
+    const body = await req.json();
+    const { to, cc, country, risk_level, information, user_id } = body as RequestBody;
+
+    if (!to || !country || !risk_level || !information || !user_id) {
+      throw new Error('Missing required fields');
+    }
 
     console.log('Creating email log entry for:', { to, country, risk_level, user_id });
 
     // Create email log entry with pending status
-    const { error: logError } = await supabase
+    const { data: logData, error: logError } = await supabase
       .from('email_logs')
       .insert([{
         recipient: to,
@@ -46,11 +52,17 @@ serve(async (req) => {
         risk_level,
         sent_by: user_id,
         status: 'pending'
-      }]);
+      }])
+      .select()
+      .single();
 
     if (logError) {
       console.error('Error creating email log:', logError);
-      throw new Error('Failed to create email log');
+      throw new Error(`Failed to create email log: ${logError.message}`);
+    }
+
+    if (!logData) {
+      throw new Error('Failed to create email log: No data returned');
     }
 
     // Generate email HTML
@@ -101,8 +113,7 @@ serve(async (req) => {
           status: 'failed',
           error_message: emailData.message || 'Failed to send email',
         })
-        .eq('recipient', to)
-        .eq('status', 'pending');
+        .eq('id', logData.id);
 
       throw new Error(emailData.message || 'Failed to send email');
     }
@@ -115,8 +126,7 @@ serve(async (req) => {
       .update({
         status: 'sent',
       })
-      .eq('recipient', to)
-      .eq('status', 'pending');
+      .eq('id', logData.id);
 
     return new Response(JSON.stringify(emailData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -128,7 +138,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        details: "An error occurred while processing your request"
+        details: error.stack || "An error occurred while processing your request"
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
