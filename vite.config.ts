@@ -1,13 +1,14 @@
 import path from "path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
+import { componentTagger } from "lovable-tagger";
 
 console.log('Loading Vite configuration...');
 
-// https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
+    mode === 'development' && componentTagger(),
     {
       name: 'deployment-logger',
       configureServer(server) {
@@ -24,14 +25,14 @@ export default defineConfig({
         console.log('Build completed');
       }
     }
-  ],
+  ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
   server: {
-    host: true,
+    host: "::",
     port: 8080,
     strictPort: true,
     headers: {
@@ -41,4 +42,4 @@ export default defineConfig({
       'Surrogate-Control': 'no-store'
     }
   }
-});
+}));
