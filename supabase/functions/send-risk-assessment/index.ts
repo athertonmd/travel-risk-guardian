@@ -53,6 +53,7 @@ serve(async (req) => {
         sent_by: user_id,
         recipient_status: 'pending',
         cc_status: cc && cc.length > 0 ? 'pending' : null,
+        sent_at: new Date().toISOString()
       }])
       .select()
       .single();
@@ -65,6 +66,8 @@ serve(async (req) => {
     if (!logData) {
       throw new Error('Failed to create email log: No data returned');
     }
+
+    console.log('Created email log:', logData);
 
     // Generate email HTML
     const html = `
@@ -90,7 +93,7 @@ serve(async (req) => {
 
     // Construct email payload
     const emailPayload = {
-      from: 'Travel Risk Guardian <onboarding@resend.dev>', // Using Resend's testing domain
+      from: 'Travel Risk Guardian <onboarding@resend.dev>',
       to: [to],
       subject: `Risk Assessment - ${country}`,
       html,
@@ -119,7 +122,7 @@ serve(async (req) => {
 
     if (!emailRes.ok) {
       // Update log with failed status
-      await supabase
+      const { error: updateError } = await supabase
         .from('email_logs')
         .update({
           recipient_status: 'failed',
@@ -129,11 +132,15 @@ serve(async (req) => {
         })
         .eq('id', logData.id);
 
+      if (updateError) {
+        console.error('Error updating email log with failed status:', updateError);
+      }
+
       throw new Error(emailData.message || 'Failed to send email');
     }
 
     // Update log with success status
-    await supabase
+    const { error: updateError } = await supabase
       .from('email_logs')
       .update({
         recipient_status: 'sent',
@@ -142,6 +149,12 @@ serve(async (req) => {
         cc_error_message: null
       })
       .eq('id', logData.id);
+
+    if (updateError) {
+      console.error('Error updating email log with success status:', updateError);
+    } else {
+      console.log('Successfully updated email log with sent status');
+    }
 
     return new Response(JSON.stringify(emailData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
