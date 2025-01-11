@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -24,12 +25,17 @@ interface EmailDialogProps {
 interface EmailFormData {
   email: string;
   cc: string;
+  requireApproval: boolean;
 }
 
 export const EmailRiskAssessmentDialog = ({ country, assessment, information }: EmailDialogProps) => {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
-  const { register, handleSubmit, formState: { isSubmitting } } = useForm<EmailFormData>();
+  const { register, handleSubmit, formState: { isSubmitting }, setValue, watch } = useForm<EmailFormData>({
+    defaultValues: {
+      requireApproval: false
+    }
+  });
 
   const onSubmit = async (data: EmailFormData) => {
     try {
@@ -41,6 +47,16 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information }: 
 
       const ccEmails = data.cc ? data.cc.split(',').map(email => email.trim()) : [];
       
+      if (data.requireApproval) {
+        // Placeholder for approval workflow
+        toast({
+          title: "Approval Required",
+          description: "This feature is coming soon. The email will be sent for approval.",
+        });
+        setOpen(false);
+        return;
+      }
+
       const { error, data: response } = await supabase.functions.invoke('send-risk-assessment', {
         body: {
           to: data.email,
@@ -102,6 +118,17 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information }: 
               placeholder="Enter CC emails, separated by commas"
               {...register("cc")}
             />
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="requireApproval"
+              onCheckedChange={(checked) => {
+                setValue("requireApproval", checked as boolean);
+              }}
+            />
+            <Label htmlFor="requireApproval" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              Send for approval first
+            </Label>
           </div>
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? "Sending..." : "Send"}
