@@ -101,6 +101,7 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information }: 
         <EmailRiskAssessmentForm 
           form={form} 
           isSubmitting={form.formState.isSubmitting} 
+          onSubmit={onSubmit}
         />
       </DialogContent>
     </Dialog>

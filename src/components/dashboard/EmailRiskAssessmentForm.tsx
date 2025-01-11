@@ -13,13 +13,14 @@ interface EmailFormData {
 interface EmailRiskAssessmentFormProps {
   form: UseFormReturn<EmailFormData>;
   isSubmitting: boolean;
+  onSubmit: (data: EmailFormData) => Promise<void>;
 }
 
-export const EmailRiskAssessmentForm = ({ form, isSubmitting }: EmailRiskAssessmentFormProps) => {
+export const EmailRiskAssessmentForm = ({ form, isSubmitting, onSubmit }: EmailRiskAssessmentFormProps) => {
   const { register, setValue } = form;
 
   return (
-    <form onSubmit={form.handleSubmit} className="space-y-4">
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
       <div>
         <Label htmlFor="email">Recipient Email</Label>
         <Input
