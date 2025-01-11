@@ -46,7 +46,6 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information }: 
       const ccEmails = data.cc ? data.cc.split(',').map(email => email.trim()) : [];
       
       if (data.requireApproval) {
-        // Placeholder for approval workflow
         toast({
           title: "Approval Required",
           description: "This feature is coming soon. The email will be sent for approval.",
@@ -70,7 +69,7 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information }: 
 
       toast({
         title: "Success",
-        description: "Risk assessment sent successfully (Note: Currently in testing mode - emails will be sent to the verified email address only)",
+        description: "Risk assessment sent successfully",
       });
       setOpen(false);
     } catch (error: any) {
@@ -95,7 +94,7 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information }: 
         <DialogHeader>
           <DialogTitle>Email Risk Assessment</DialogTitle>
           <DialogDescription>
-            Note: Currently in testing mode - all emails will be sent to the verified email address only.
+            Send this risk assessment report via email.
           </DialogDescription>
         </DialogHeader>
         <EmailRiskAssessmentForm 

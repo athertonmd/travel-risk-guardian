@@ -30,7 +30,7 @@ export async function sendEmail(emailData: EmailData, logData: EmailLogEntry): P
       throw new Error('Failed to create email log');
     }
 
-    // Send primary recipient email first
+    // Send primary recipient email
     const primaryRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -38,7 +38,7 @@ export async function sendEmail(emailData: EmailData, logData: EmailLogEntry): P
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'Travel Risk Guardian <onboarding@resend.dev>',
+        from: 'Travel Risk Guardian <notifications@tripguardian.corpanda.com>',
         to: [emailData.to[0]], // Primary recipient
         subject: emailData.subject,
         html: emailData.html,
@@ -72,7 +72,7 @@ export async function sendEmail(emailData: EmailData, logData: EmailLogEntry): P
           Authorization: `Bearer ${RESEND_API_KEY}`,
         },
         body: JSON.stringify({
-          from: 'Travel Risk Guardian <onboarding@resend.dev>',
+          from: 'Travel Risk Guardian <notifications@tripguardian.corpanda.com>',
           to: ccRecipients,
           subject: `${emailData.subject} (CC to: ${primaryRecipient})`,
           html: ccHtml,
