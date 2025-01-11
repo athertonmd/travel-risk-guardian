@@ -1,34 +1,10 @@
-import path from "path";
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
-import { componentTagger } from "lovable-tagger";
-import type { ViteDevServer } from 'vite';
-import type { Connect } from 'vite';
-import type { IncomingMessage, ServerResponse } from 'http';
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react-swc';
+import path from 'path';
 
-console.log('Loading Vite configuration...');
-
-export default defineConfig(({ mode }) => ({
-  plugins: [
-    react(),
-    mode === 'development' && componentTagger(),
-    {
-      name: 'deployment-logger',
-      configureServer(server: ViteDevServer) {
-        console.log('Server starting...');
-        server.middlewares.use((req: Connect.IncomingMessage, res: ServerResponse<IncomingMessage>, next: Connect.NextFunction) => {
-          console.log(`Request: ${req.url}`);
-          next();
-        });
-      },
-      buildStart() {
-        console.log('Build starting...');
-      },
-      buildEnd() {
-        console.log('Build completed');
-      }
-    }
-  ].filter(Boolean),
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -49,12 +25,5 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
-    strictPort: true,
-    headers: {
-      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
-      'Pragma': 'no-cache',
-      'Expires': '0',
-      'Surrogate-Control': 'no-store'
-    }
-  }
-}));
+  },
+});
