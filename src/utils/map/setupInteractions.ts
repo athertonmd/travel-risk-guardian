@@ -20,6 +20,7 @@ export const setupMapInteractions = (
   // Create a container for the popup content
   const popupContainer = document.createElement('div');
   let root: ReturnType<typeof createRoot> | null = null;
+  let isHoveringPopup = false;
 
   const handleCountryFeature = (feature: mapboxgl.MapboxGeoJSONFeature) => {
     const countryName = feature.properties?.name_en;
@@ -33,6 +34,8 @@ export const setupMapInteractions = (
   };
 
   map.on('mousemove', 'country-fills', (e) => {
+    if (isHoveringPopup) return; // Don't update popup if user is interacting with it
+    
     if (e.features && e.features.length > 0) {
       map.getCanvas().style.cursor = 'pointer';
       const assessment = handleCountryFeature(e.features[0]);
@@ -55,14 +58,32 @@ export const setupMapInteractions = (
 
         // Set the popup location
         popup.setLngLat(e.lngLat).setDOMContent(popupContainer).addTo(map);
-      } else {
-        // If no assessment, remove popup
-        popup.remove();
+
+        // Add mouseenter/mouseleave handlers to popup
+        const popupElement = popup.getElement();
+        popupElement.addEventListener('mouseenter', () => {
+          isHoveringPopup = true;
+        });
+        
+        popupElement.addEventListener('mouseleave', () => {
+          isHoveringPopup = false;
+          if (!map.getLayer('country-fills')) return;
+          const features = map.queryRenderedFeatures(e.point, { layers: ['country-fills'] });
+          if (features.length === 0) {
+            popup.remove();
+            if (root) {
+              root.unmount();
+              root = null;
+            }
+          }
+        });
       }
     }
   });
 
-  map.on('mouseleave', 'country-fills', () => {
+  map.on('mouseleave', 'country-fills', (e) => {
+    if (isHoveringPopup) return; // Don't remove popup if user is interacting with it
+    
     map.getCanvas().style.cursor = '';
     popup.remove();
     if (root) {
