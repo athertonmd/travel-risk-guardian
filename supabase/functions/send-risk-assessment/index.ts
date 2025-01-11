@@ -123,7 +123,7 @@ serve(async (req) => {
             body: JSON.stringify({
               from: 'Travel Risk Guardian <onboarding@resend.dev>',
               to: [ccEmail],
-              subject: `Risk Assessment - ${country}`,
+              subject: `Risk Assessment - ${country} (CC: sent to ${to})`,
               html,
             }),
           });
