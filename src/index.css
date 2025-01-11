@@ -91,4 +91,10 @@
 .mapboxgl-popup-content {
   max-height: 80vh !important;
   overflow: visible !important;
+  pointer-events: auto !important;
+}
+
+/* Enable scrolling on popup content */
+.mapboxgl-popup * {
+  pointer-events: auto !important;
 }
