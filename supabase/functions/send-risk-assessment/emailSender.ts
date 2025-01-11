@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
+import { EmailData, EmailLogEntry } from "./types.ts";
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 const corsHeaders = {
@@ -6,23 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface EmailData {
-  to: string;
-  cc?: string[];
-  subject: string;
-  html: string;
-}
-
-interface LogData {
-  recipient: string;
-  cc: string[] | null;
-  country: string;
-  risk_level: string;
-  sent_by: string;
-  status: 'pending' | 'sent' | 'failed';
-}
-
-export async function sendEmail(emailData: EmailData, logData: LogData): Promise<Response> {
+export async function sendEmail(emailData: EmailData, logData: EmailLogEntry): Promise<Response> {
   try {
     if (!RESEND_API_KEY) {
       throw new Error('RESEND_API_KEY is not configured');
@@ -33,20 +18,17 @@ export async function sendEmail(emailData: EmailData, logData: LogData): Promise
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // First, create the email log entry with pending status
+    // Create email log entry with pending status
     const { error: logError } = await supabase
       .from('email_logs')
-      .insert([{
-        ...logData,
-        status: 'pending',
-      }]);
+      .insert([logData]);
 
     if (logError) {
       console.error('Error creating email log:', logError);
       throw new Error('Failed to create email log');
     }
 
-    // Send email using Resend with the temporary resend.dev domain
+    // Send email using Resend
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -55,7 +37,7 @@ export async function sendEmail(emailData: EmailData, logData: LogData): Promise
       },
       body: JSON.stringify({
         ...emailData,
-        from: 'Travel Risk Guardian <onboarding@resend.dev>', // Using resend.dev domain temporarily
+        from: 'Travel Risk Guardian <onboarding@resend.dev>',
       }),
     });
 
@@ -67,11 +49,11 @@ export async function sendEmail(emailData: EmailData, logData: LogData): Promise
       await supabase
         .from('email_logs')
         .update({
-          status: 'failed',
-          error_message: responseData.message || 'Failed to send email',
+          recipient_status: 'failed',
+          recipient_error_message: responseData.message || 'Failed to send email',
         })
         .eq('recipient', logData.recipient)
-        .eq('status', 'pending');
+        .eq('recipient_status', 'pending');
 
       throw new Error(responseData.message || 'Failed to send email');
     }
@@ -80,10 +62,10 @@ export async function sendEmail(emailData: EmailData, logData: LogData): Promise
     await supabase
       .from('email_logs')
       .update({
-        status: 'sent',
+        recipient_status: 'sent',
       })
       .eq('recipient', logData.recipient)
-      .eq('status', 'pending');
+      .eq('recipient_status', 'pending');
 
     return new Response(JSON.stringify(responseData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -95,7 +77,7 @@ export async function sendEmail(emailData: EmailData, logData: LogData): Promise
     return new Response(
       JSON.stringify({
         error: error.message,
-        details: "Make sure RESEND_API_KEY is configured and you're using the resend.dev domain for testing"
+        details: "Make sure RESEND_API_KEY is configured correctly"
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

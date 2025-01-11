@@ -1,10 +1,19 @@
-interface RiskAssessmentEmailData {
-  country: string;
-  risk_level: string;
-  information: string;
-}
+const getRiskColor = (risk: string): string => {
+  switch (risk.toLowerCase()) {
+    case 'extreme':
+      return '#ef4444';
+    case 'high':
+      return '#f97316';
+    case 'medium':
+      return '#eab308';
+    case 'low':
+      return '#22c55e';
+    default:
+      return '#6b7280';
+  }
+};
 
-export const generateEmailTemplate = ({ country, risk_level, information }: RiskAssessmentEmailData): string => {
+export const generateEmailHtml = (country: string, risk_level: string, information: string): string => {
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <h2 style="color: #333;">Risk Assessment Report</h2>
@@ -23,19 +32,4 @@ export const generateEmailTemplate = ({ country, risk_level, information }: Risk
       </div>
     </div>
   `;
-};
-
-const getRiskColor = (risk: string): string => {
-  switch (risk.toLowerCase()) {
-    case 'extreme':
-      return '#ef4444';
-    case 'high':
-      return '#f97316';
-    case 'medium':
-      return '#eab308';
-    case 'low':
-      return '#22c55e';
-    default:
-      return '#6b7280';
-  }
 };
