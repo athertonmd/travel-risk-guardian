@@ -18,7 +18,6 @@ interface RequestBody {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -32,7 +31,6 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Parse and validate request body
     const body = await req.json();
     const { to, cc, country, risk_level, information, user_id } = body as RequestBody;
 
@@ -91,75 +89,89 @@ serve(async (req) => {
 
     console.log('Sending email to:', to, 'with CC:', cc);
 
-    // Construct email payload
-    const emailPayload = {
-      from: 'Travel Risk Guardian <onboarding@resend.dev>',
-      to: [to],
-      subject: `Risk Assessment - ${country}`,
-      html,
-    };
-
-    // Add CC recipients if they exist
-    if (cc && cc.length > 0) {
-      console.log('Adding CC recipients:', cc);
-      emailPayload.cc = cc;
-    }
-
-    console.log('Final email payload:', JSON.stringify(emailPayload, null, 2));
-
-    // Send email using Resend
-    const emailRes = await fetch('https://api.resend.com/emails', {
+    // Send email to primary recipient
+    const recipientEmailRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
-      body: JSON.stringify(emailPayload),
+      body: JSON.stringify({
+        from: 'Travel Risk Guardian <onboarding@resend.dev>',
+        to: [to],
+        subject: `Risk Assessment - ${country}`,
+        html,
+      }),
     });
 
-    const emailData = await emailRes.json();
-    console.log('Resend API response:', emailData);
+    const recipientEmailData = await recipientEmailRes.json();
+    console.log('Recipient email response:', recipientEmailData);
 
-    if (!emailRes.ok) {
-      // Update log with failed status
-      const { error: updateError } = await supabase
-        .from('email_logs')
-        .update({
-          recipient_status: 'failed',
-          recipient_error_message: emailData.message || 'Failed to send email',
-          cc_status: cc && cc.length > 0 ? 'failed' : null,
-          cc_error_message: cc && cc.length > 0 ? emailData.message || 'Failed to send email' : null
-        })
-        .eq('id', logData.id);
+    let ccEmailError = null;
+    let ccEmailSuccess = true;
 
-      if (updateError) {
-        console.error('Error updating email log with failed status:', updateError);
+    // Send separate emails to CC recipients if they exist
+    if (cc && cc.length > 0) {
+      for (const ccEmail of cc) {
+        try {
+          const ccEmailRes = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${RESEND_API_KEY}`,
+            },
+            body: JSON.stringify({
+              from: 'Travel Risk Guardian <onboarding@resend.dev>',
+              to: [ccEmail],
+              subject: `Risk Assessment - ${country}`,
+              html,
+            }),
+          });
+
+          const ccEmailData = await ccEmailRes.json();
+          console.log('CC email response for', ccEmail, ':', ccEmailData);
+
+          if (!ccEmailRes.ok) {
+            ccEmailSuccess = false;
+            ccEmailError = ccEmailData.message || 'Failed to send CC email';
+            break;
+          }
+        } catch (error) {
+          console.error('Error sending CC email to', ccEmail, ':', error);
+          ccEmailSuccess = false;
+          ccEmailError = error.message;
+          break;
+        }
       }
-
-      throw new Error(emailData.message || 'Failed to send email');
     }
 
-    // Update log with success status
+    // Update log with final status
     const { error: updateError } = await supabase
       .from('email_logs')
       .update({
-        recipient_status: 'sent',
-        recipient_error_message: null,
-        cc_status: cc && cc.length > 0 ? 'sent' : null,
-        cc_error_message: null
+        recipient_status: recipientEmailRes.ok ? 'sent' : 'failed',
+        recipient_error_message: !recipientEmailRes.ok ? JSON.stringify(recipientEmailData) : null,
+        cc_status: cc && cc.length > 0 ? (ccEmailSuccess ? 'sent' : 'failed') : null,
+        cc_error_message: ccEmailError
       })
       .eq('id', logData.id);
 
     if (updateError) {
-      console.error('Error updating email log with success status:', updateError);
+      console.error('Error updating email log with final status:', updateError);
     } else {
-      console.log('Successfully updated email log with sent status');
+      console.log('Successfully updated email log with final status');
     }
 
-    return new Response(JSON.stringify(emailData), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    });
+    return new Response(
+      JSON.stringify({
+        recipient: recipientEmailData,
+        cc: { success: ccEmailSuccess, error: ccEmailError }
+      }), 
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: recipientEmailRes.ok && (!cc || cc.length === 0 || ccEmailSuccess) ? 200 : 500,
+      }
+    );
 
   } catch (error: any) {
     console.error('Error in send-risk-assessment function:', error);
