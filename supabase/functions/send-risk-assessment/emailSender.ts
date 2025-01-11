@@ -19,9 +19,11 @@ export async function sendEmail(emailData: EmailData, logData: EmailLogEntry): P
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Create email log entry with pending status
-    const { error: logError } = await supabase
+    const { data: logEntry, error: logError } = await supabase
       .from('email_logs')
-      .insert([logData]);
+      .insert([logData])
+      .select()
+      .single();
 
     if (logError) {
       console.error('Error creating email log:', logError);
@@ -45,27 +47,28 @@ export async function sendEmail(emailData: EmailData, logData: EmailLogEntry): P
     console.log('Resend API response:', responseData);
 
     if (!res.ok) {
-      // Update log with failed status
+      // Update log with failed status for both recipient and CC
       await supabase
         .from('email_logs')
         .update({
           recipient_status: 'failed',
           recipient_error_message: responseData.message || 'Failed to send email',
+          cc_status: logData.cc ? 'failed' : null,
+          cc_error_message: logData.cc ? (responseData.message || 'Failed to send email') : null,
         })
-        .eq('recipient', logData.recipient)
-        .eq('recipient_status', 'pending');
+        .eq('id', logEntry.id);
 
       throw new Error(responseData.message || 'Failed to send email');
     }
 
-    // Update log with success status
+    // Update log with success status for both recipient and CC
     await supabase
       .from('email_logs')
       .update({
         recipient_status: 'sent',
+        cc_status: logData.cc ? 'sent' : null,
       })
-      .eq('recipient', logData.recipient)
-      .eq('recipient_status', 'pending');
+      .eq('id', logEntry.id);
 
     return new Response(JSON.stringify(responseData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

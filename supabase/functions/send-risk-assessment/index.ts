@@ -25,10 +25,10 @@ serve(async (req: Request) => {
     // Generate email HTML content
     const html = generateEmailHtml(country, risk_level, information);
 
-    // Send primary recipient email
-    const primaryEmailResponse = await sendEmail(
+    // Create a single email log entry for both primary recipient and CC
+    const emailResponse = await sendEmail(
       {
-        to: [to],
+        to: [to, ...(cc || [])],
         subject: `Risk Assessment - ${country}`,
         html,
       },
@@ -44,29 +44,7 @@ serve(async (req: Request) => {
       }
     );
 
-    // If there are CC recipients, send them separate emails
-    if (cc && cc.length > 0) {
-      for (const ccEmail of cc) {
-        await sendEmail(
-          {
-            to: [ccEmail],
-            subject: `Risk Assessment - ${country} (CC: sent to ${to})`,
-            html,
-          },
-          {
-            recipient: ccEmail,
-            cc: null,
-            country,
-            risk_level,
-            sent_by: user_id,
-            recipient_status: 'pending',
-            sent_at: new Date().toISOString(),
-          }
-        );
-      }
-    }
-
-    return primaryEmailResponse;
+    return emailResponse;
 
   } catch (error: any) {
     console.error('Error in send-risk-assessment function:', error);
