@@ -54,6 +54,16 @@ export async function sendEmail(emailData: EmailData, logData: EmailLogEntry): P
     // If there are CC recipients, send them in a separate email
     if (emailData.to.length > 1) {
       const ccRecipients = emailData.to.slice(1);
+      const primaryRecipient = emailData.to[0];
+      
+      // Modify the HTML to include the primary recipient information
+      const ccHtml = `
+        <div style="margin-bottom: 20px; padding: 10px; background-color: #f5f5f5; border-radius: 5px;">
+          <p style="margin: 0; color: #666;">Primary recipient: ${primaryRecipient}</p>
+        </div>
+        ${emailData.html}
+      `;
+
       const ccRes = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -63,8 +73,8 @@ export async function sendEmail(emailData: EmailData, logData: EmailLogEntry): P
         body: JSON.stringify({
           from: 'Travel Risk Guardian <onboarding@resend.dev>',
           to: ccRecipients,
-          subject: `${emailData.subject} (CC)`,
-          html: emailData.html,
+          subject: `${emailData.subject} (CC - sent to ${primaryRecipient})`,
+          html: ccHtml,
         }),
       });
 
