@@ -59,7 +59,8 @@ export async function sendEmail(emailData: EmailData, logData: EmailLogEntry): P
       // Modify the HTML to include the primary recipient information
       const ccHtml = `
         <div style="margin-bottom: 20px; padding: 10px; background-color: #f5f5f5; border-radius: 5px;">
-          <p style="margin: 0; color: #666;">Primary recipient: ${primaryRecipient}</p>
+          <p style="margin: 0; color: #666;">This email was sent as a CC. The primary recipient is: <strong>${primaryRecipient}</strong></p>
+          <p style="margin: 5px 0 0; color: #666;">Risk assessment details below:</p>
         </div>
         ${emailData.html}
       `;
@@ -73,7 +74,7 @@ export async function sendEmail(emailData: EmailData, logData: EmailLogEntry): P
         body: JSON.stringify({
           from: 'Travel Risk Guardian <onboarding@resend.dev>',
           to: ccRecipients,
-          subject: `${emailData.subject} (CC - sent to ${primaryRecipient})`,
+          subject: `${emailData.subject} (CC to: ${primaryRecipient})`,
           html: ccHtml,
         }),
       });
