@@ -10,11 +10,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { EmailRiskAssessmentForm } from "./EmailRiskAssessmentForm";
 
 interface EmailDialogProps {
   country: string;
@@ -31,7 +29,7 @@ interface EmailFormData {
 export const EmailRiskAssessmentDialog = ({ country, assessment, information }: EmailDialogProps) => {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
-  const { register, handleSubmit, formState: { isSubmitting }, setValue, watch } = useForm<EmailFormData>({
+  const form = useForm<EmailFormData>({
     defaultValues: {
       requireApproval: false
     }
@@ -100,40 +98,10 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information }: 
             Note: Currently in testing mode - all emails will be sent to the verified email address only.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div>
-            <Label htmlFor="email">Recipient Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="Enter recipient's email"
-              {...register("email", { required: true })}
-            />
-          </div>
-          <div>
-            <Label htmlFor="cc">CC (Optional)</Label>
-            <Input
-              id="cc"
-              type="text"
-              placeholder="Enter CC emails, separated by commas"
-              {...register("cc")}
-            />
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="requireApproval"
-              onCheckedChange={(checked) => {
-                setValue("requireApproval", checked as boolean);
-              }}
-            />
-            <Label htmlFor="requireApproval" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              Send for approval first
-            </Label>
-          </div>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Sending..." : "Send"}
-          </Button>
-        </form>
+        <EmailRiskAssessmentForm 
+          form={form} 
+          isSubmitting={form.formState.isSubmitting} 
+        />
       </DialogContent>
     </Dialog>
   );
