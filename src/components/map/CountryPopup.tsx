@@ -22,16 +22,16 @@ export const CountryPopup = ({ assessment }: CountryPopupProps) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-4 min-w-[200px]">
+    <div className="bg-white rounded-lg shadow-lg p-4 min-w-[200px] max-w-[300px] max-h-[200px] overflow-y-auto">
       <div className="space-y-2">
         <h4 className="text-sm font-semibold">{assessment.country}</h4>
         <div className="flex items-center">
-          <Info className="h-4 w-4 mr-2" />
+          <Info className="h-4 w-4 mr-2 flex-shrink-0" />
           <p className={`text-sm font-medium ${getRiskColor(assessment.assessment)}`}>
             {assessment.assessment.toUpperCase()} RISK
           </p>
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground break-words">
           {assessment.information}
         </p>
       </div>

@@ -82,3 +82,13 @@
 .country-popup .mapboxgl-popup-tip {
   @apply hidden;
 }
+
+/* Ensure popups stay within viewport */
+.mapboxgl-popup {
+  max-width: none !important;
+}
+
+.mapboxgl-popup-content {
+  max-height: 80vh !important;
+  overflow: visible !important;
+}
