@@ -30,47 +30,65 @@ export async function sendEmail(emailData: EmailData, logData: EmailLogEntry): P
       throw new Error('Failed to create email log');
     }
 
-    // Send email using Resend
-    const res = await fetch('https://api.resend.com/emails', {
+    // Send primary recipient email first
+    const primaryRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        ...emailData,
         from: 'Travel Risk Guardian <onboarding@resend.dev>',
+        to: [emailData.to[0]], // Primary recipient
+        subject: emailData.subject,
+        html: emailData.html,
       }),
     });
 
-    const responseData = await res.json();
-    console.log('Resend API response:', responseData);
+    const primaryResponseData = await primaryRes.json();
+    console.log('Resend API primary response:', primaryResponseData);
 
-    if (!res.ok) {
-      // Update log with failed status for both recipient and CC
-      await supabase
-        .from('email_logs')
-        .update({
-          recipient_status: 'failed',
-          recipient_error_message: responseData.message || 'Failed to send email',
-          cc_status: logData.cc ? 'failed' : null,
-          cc_error_message: logData.cc ? (responseData.message || 'Failed to send email') : null,
-        })
-        .eq('id', logEntry.id);
+    let ccResponseData = null;
+    let ccSuccess = false;
 
-      throw new Error(responseData.message || 'Failed to send email');
+    // If there are CC recipients, send them in a separate email
+    if (emailData.to.length > 1) {
+      const ccRecipients = emailData.to.slice(1);
+      const ccRes = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+        },
+        body: JSON.stringify({
+          from: 'Travel Risk Guardian <onboarding@resend.dev>',
+          to: ccRecipients,
+          subject: `${emailData.subject} (CC)`,
+          html: emailData.html,
+        }),
+      });
+
+      ccResponseData = await ccRes.json();
+      console.log('Resend API CC response:', ccResponseData);
+      ccSuccess = ccRes.ok;
     }
 
-    // Update log with success status for both recipient and CC
+    // Update log based on both primary and CC status
     await supabase
       .from('email_logs')
       .update({
-        recipient_status: 'sent',
-        cc_status: logData.cc ? 'sent' : null,
+        recipient_status: primaryRes.ok ? 'sent' : 'failed',
+        recipient_error_message: !primaryRes.ok ? primaryResponseData.message : null,
+        cc_status: emailData.to.length > 1 ? (ccSuccess ? 'sent' : 'failed') : null,
+        cc_error_message: ccResponseData?.message || null,
       })
       .eq('id', logEntry.id);
 
-    return new Response(JSON.stringify(responseData), {
+    if (!primaryRes.ok) {
+      throw new Error(primaryResponseData.message || 'Failed to send email to primary recipient');
+    }
+
+    return new Response(JSON.stringify(primaryResponseData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
