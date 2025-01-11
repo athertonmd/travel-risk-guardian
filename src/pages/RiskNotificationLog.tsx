@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { NotificationsTable } from "@/components/notifications/NotificationsTable";
+import { DownloadLogsButton } from "@/components/notifications/DownloadLogsButton";
 import { useEmailLogs } from "@/hooks/useEmailLogs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
@@ -56,14 +57,17 @@ const RiskNotificationLog = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center gap-4">
-        <SidebarTrigger />
-        <AdminHeader
-          onBackClick={() => navigate('/dashboard')}
-          onUploadClick={() => {}}
-          uploading={false}
-          hideUpload
-        />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <SidebarTrigger />
+          <AdminHeader
+            onBackClick={() => navigate('/dashboard')}
+            onUploadClick={() => {}}
+            uploading={false}
+            hideUpload
+          />
+        </div>
+        <DownloadLogsButton emailLogs={emailLogs} />
       </div>
 
       <div className="rounded-md border">
