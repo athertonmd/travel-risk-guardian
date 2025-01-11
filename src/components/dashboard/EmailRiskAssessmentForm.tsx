@@ -47,7 +47,7 @@ export const EmailRiskAssessmentForm = ({ form, isSubmitting, onSubmit }: EmailR
           }}
         />
         <Label htmlFor="requireApproval" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-          Send for approval first
+          Send for approval
         </Label>
       </div>
       <Button type="submit" disabled={isSubmitting}>
