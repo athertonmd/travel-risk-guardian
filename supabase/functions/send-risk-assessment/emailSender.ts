@@ -30,6 +30,13 @@ export async function sendEmail(emailData: EmailData, logData: EmailLogEntry): P
       throw new Error('Failed to create email log');
     }
 
+    // Log the email request details for debugging
+    console.log('Sending email with data:', {
+      to: emailData.to[0],
+      cc: emailData.to.slice(1),
+      subject: emailData.subject
+    });
+
     // Send primary recipient email
     const primaryRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -42,6 +49,7 @@ export async function sendEmail(emailData: EmailData, logData: EmailLogEntry): P
         to: [emailData.to[0]], // Primary recipient
         subject: emailData.subject,
         html: emailData.html,
+        reply_to: 'notifications@tripguardian.corpanda.com'
       }),
     });
 
@@ -76,6 +84,7 @@ export async function sendEmail(emailData: EmailData, logData: EmailLogEntry): P
           to: ccRecipients,
           subject: `${emailData.subject} (CC to: ${primaryRecipient})`,
           html: ccHtml,
+          reply_to: 'notifications@tripguardian.corpanda.com'
         }),
       });
 
@@ -89,13 +98,14 @@ export async function sendEmail(emailData: EmailData, logData: EmailLogEntry): P
       .from('email_logs')
       .update({
         recipient_status: primaryRes.ok ? 'sent' : 'failed',
-        recipient_error_message: !primaryRes.ok ? primaryResponseData.message : null,
+        recipient_error_message: !primaryRes.ok ? JSON.stringify(primaryResponseData) : null,
         cc_status: emailData.to.length > 1 ? (ccSuccess ? 'sent' : 'failed') : null,
-        cc_error_message: ccResponseData?.message || null,
+        cc_error_message: ccResponseData ? JSON.stringify(ccResponseData) : null,
       })
       .eq('id', logEntry.id);
 
     if (!primaryRes.ok) {
+      console.error('Failed to send email:', primaryResponseData);
       throw new Error(primaryResponseData.message || 'Failed to send email to primary recipient');
     }
 
@@ -109,7 +119,7 @@ export async function sendEmail(emailData: EmailData, logData: EmailLogEntry): P
     return new Response(
       JSON.stringify({
         error: error.message,
-        details: "Make sure RESEND_API_KEY is configured correctly"
+        details: "Failed to send email. Check the Edge Function logs for more details."
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
