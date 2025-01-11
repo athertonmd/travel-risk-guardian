@@ -2,7 +2,9 @@ import path from "path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import { componentTagger } from "lovable-tagger";
-import type { ViteDevServer, Connect } from 'vite';
+import type { ViteDevServer } from 'vite';
+import type { Connect } from 'vite';
+import type { IncomingMessage, ServerResponse } from 'http';
 
 console.log('Loading Vite configuration...');
 
@@ -14,7 +16,7 @@ export default defineConfig(({ mode }) => ({
       name: 'deployment-logger',
       configureServer(server: ViteDevServer) {
         console.log('Server starting...');
-        server.middlewares.use((req: Connect.IncomingMessage, res: Connect.ServerResponse<Connect.IncomingMessage>, next: Connect.NextFunction) => {
+        server.middlewares.use((req: Connect.IncomingMessage, res: ServerResponse<IncomingMessage>, next: Connect.NextFunction) => {
           console.log(`Request: ${req.url}`);
           next();
         });
