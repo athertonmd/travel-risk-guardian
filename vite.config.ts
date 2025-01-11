@@ -9,6 +9,11 @@ export default defineConfig(({ mode }) => ({
     host: true, // Listen on all addresses
     port: 8080,
     strictPort: true, // Fail if port is already in use
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+    },
   },
   plugins: [
     react(),
