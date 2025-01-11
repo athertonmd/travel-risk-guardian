@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => ({
       name: 'deployment-logger',
       configureServer(server: ViteDevServer) {
         console.log('Server starting...');
-        server.middlewares.use((req: Connect.IncomingMessage, _res: Connect.ServerResponse, next: Connect.NextFunction) => {
+        server.middlewares.use((req: Connect.IncomingMessage, res: Connect.ServerResponse<Connect.IncomingMessage>, next: Connect.NextFunction) => {
           console.log(`Request: ${req.url}`);
           next();
         });
