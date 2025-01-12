@@ -29,13 +29,13 @@ async function sendEmailWithResend(emailPayload: {
   html: string;
   reply_to: string;
 }) {
+  const startTime = Date.now();
   console.log('Sending email with payload:', emailPayload);
   
   if (!RESEND_API_KEY) {
     throw new Error('RESEND_API_KEY is not configured');
   }
   
-  const startTime = Date.now();
   try {
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -70,7 +70,6 @@ async function sendEmails(emailData: EmailData) {
   const baseEmailPayload = {
     from: 'Travel Risk Guardian <send@tripguardian.corpanda.com>',
     reply_to: 'support@tripguardian.corpanda.com',
-    subject: emailData.subject,
   };
 
   // Prepare all email payloads
@@ -80,11 +79,13 @@ async function sendEmails(emailData: EmailData) {
   emailPayloads.push({
     ...baseEmailPayload,
     to: [emailData.to[0]],
+    subject: emailData.subject,
     html: emailData.html,
   });
 
   // CC recipients (if any)
   if (emailData.to.length > 1) {
+    const ccSubject = `Risk Assessment - ${emailData.country} (Traveller: ${emailData.travellerName || 'Not specified'})`;
     const ccHtml = `
       <div style="margin-bottom: 20px; padding: 10px; background-color: #f5f5f5; border-radius: 5px;">
         <p style="margin: 0; color: #666;">This email was sent as a CC. The primary recipient is: <strong>${emailData.to[0]}</strong></p>
@@ -97,7 +98,7 @@ async function sendEmails(emailData: EmailData) {
     emailPayloads.push({
       ...baseEmailPayload,
       to: emailData.to.slice(1),
-      subject: `${emailData.subject} (CC to: ${emailData.to[0]})`,
+      subject: ccSubject,
       html: ccHtml,
     });
   }
