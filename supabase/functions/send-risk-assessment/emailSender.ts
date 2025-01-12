@@ -38,11 +38,11 @@ async function sendEmailWithResend(to: string[], subject: string, html: string) 
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'Travel Risk Guardian <onboarding@resend.dev>',
+        from: 'Travel Risk Guardian <notifications@manticpoint.com>',
         to,
         subject,
         html,
-        reply_to: 'onboarding@resend.dev'
+        reply_to: 'support@manticpoint.com'
       }),
     });
 
