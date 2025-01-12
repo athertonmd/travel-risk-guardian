@@ -22,6 +22,7 @@ export type Database = {
           risk_level: Database["public"]["Enums"]["risk_level"]
           sent_at: string | null
           sent_by: string
+          traveller_name: string | null
           updated_at: string | null
         }
         Insert: {
@@ -36,6 +37,7 @@ export type Database = {
           risk_level: Database["public"]["Enums"]["risk_level"]
           sent_at?: string | null
           sent_by: string
+          traveller_name?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -50,6 +52,7 @@ export type Database = {
           risk_level?: Database["public"]["Enums"]["risk_level"]
           sent_at?: string | null
           sent_by?: string
+          traveller_name?: string | null
           updated_at?: string | null
         }
         Relationships: [

@@ -21,7 +21,7 @@ interface EmailLog {
   cc?: string[];
   country: string;
   risk_level: string;
-  traveller_name: string;
+  traveller_name?: string | null;
   profiles: {
     email: string;
   };
