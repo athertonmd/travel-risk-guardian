@@ -25,11 +25,21 @@ async function sendEmails(emailData: EmailData, primaryRecipient: string): Promi
   // If there are CC recipients, send to them as well
   if (emailData.to.length > 1) {
     const ccRecipients = emailData.to.slice(1);
+    const ccSubject = `Risk Assessment - ${emailData.country} (Traveller: ${emailData.travellerName || 'Not specified'})`;
+    const ccHtml = `
+      <div style="margin-bottom: 20px; padding: 10px; background-color: #f5f5f5; border-radius: 5px;">
+        <p style="margin: 0; color: #666;">This email was sent as a CC. The primary recipient is: <strong>${primaryRecipient}</strong></p>
+        <p style="margin: 5px 0 0; color: #666;">Risk assessment for traveller: <strong>${emailData.travellerName || 'Not specified'}</strong></p>
+        <p style="margin: 5px 0 0; color: #666;">Risk assessment details below:</p>
+      </div>
+      ${emailData.html}
+    `;
+
     results.cc = await emailService.sendEmail({
       from: SENDER_EMAIL,
       to: ccRecipients,
-      subject: emailData.subject,
-      html: emailData.html,
+      subject: ccSubject,
+      html: ccHtml,
       reply_to: REPLY_TO_EMAIL
     });
   }
@@ -81,7 +91,9 @@ serve(async (req) => {
             <p>This is an automated risk assessment notification.</p>
           </div>
         </div>
-      `
+      `,
+      country,
+      travellerName
     };
 
     // Create initial log entry

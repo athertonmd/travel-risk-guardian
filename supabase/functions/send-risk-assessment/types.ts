@@ -28,6 +28,8 @@ export interface EmailData {
   to: string[];
   subject: string;
   html: string;
+  country: string;
+  travellerName?: string | null;
 }
 
 export interface EmailLogEntry {
