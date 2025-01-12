@@ -29,6 +29,23 @@ async function sendEmailWithResend(to: string[], subject: string, html: string) 
   if (!RESEND_API_KEY) {
     throw new Error('RESEND_API_KEY is not configured');
   }
+
+  // In test mode, we can only send to athertonmd@gmail.com
+  const AUTHORIZED_TEST_EMAIL = 'athertonmd@gmail.com';
+  const isTestMode = true; // Set this to false once domain is verified
+  
+  if (isTestMode) {
+    // Filter out unauthorized recipients
+    const unauthorizedRecipients = to.filter(email => email !== AUTHORIZED_TEST_EMAIL);
+    if (unauthorizedRecipients.length > 0) {
+      console.log('Skipping unauthorized recipients in test mode:', unauthorizedRecipients);
+      to = to.filter(email => email === AUTHORIZED_TEST_EMAIL);
+      
+      if (to.length === 0) {
+        throw new Error(`In test mode, emails can only be sent to ${AUTHORIZED_TEST_EMAIL}. Please verify your domain at resend.com/domains to send to other recipients.`);
+      }
+    }
+  }
   
   try {
     const res = await fetch('https://api.resend.com/emails', {
