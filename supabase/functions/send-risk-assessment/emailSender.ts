@@ -31,30 +31,34 @@ async function sendEmailWithResend(to: string[], subject: string, html: string) 
   }
   
   try {
+    const emailPayload = {
+      from: 'Travel Risk Guardian <send@tripguardian.corpanda.com>',
+      to,
+      subject,
+      html,
+      reply_to: 'support@tripguardian.corpanda.com'
+    };
+
+    console.log('Sending email with payload:', emailPayload);
+
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
-      body: JSON.stringify({
-        from: 'Travel Risk Guardian <send@tripguardian.corpanda.com>',
-        to,
-        subject,
-        html,
-        reply_to: 'support@tripguardian.corpanda.com'
-      }),
+      body: JSON.stringify(emailPayload),
     });
 
+    const responseData = await res.json();
+    console.log('Resend API response:', responseData);
+
     if (!res.ok) {
-      const errorData = await res.json();
-      console.error('Resend API error response:', errorData);
-      throw new Error(errorData.message || 'Failed to send email');
+      console.error('Resend API error response:', responseData);
+      throw new Error(responseData.message || 'Failed to send email');
     }
 
-    const data = await res.json();
-    console.log('Email sent successfully:', data);
-    return { success: true, data };
+    return { success: true, data: responseData };
   } catch (error) {
     console.error('Error sending email:', error);
     throw error;
@@ -125,14 +129,19 @@ export async function sendEmail(emailData: EmailData, logData: EmailLogEntry): P
 
     // Send emails concurrently
     const emailResults = await sendEmails(emailData, emailData.to[0]);
+    console.log('Email sending results:', emailResults);
 
     // Update log with results
-    await updateEmailLog(supabase, logEntry.id, {
+    const updateData = {
       recipient_status: emailResults.primary.success ? 'sent' : 'failed',
       recipient_error_message: !emailResults.primary.success ? JSON.stringify(emailResults.primary.error) : null,
       cc_status: emailResults.cc ? (emailResults.cc.success ? 'sent' : 'failed') : null,
       cc_error_message: emailResults.cc?.error ? JSON.stringify(emailResults.cc.error) : null,
-    });
+    };
+
+    console.log('Updating email log with:', updateData);
+
+    await updateEmailLog(supabase, logEntry.id, updateData);
 
     return new Response(JSON.stringify(emailResults.primary.data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
