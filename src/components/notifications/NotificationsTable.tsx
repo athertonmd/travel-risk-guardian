@@ -21,6 +21,7 @@ interface EmailLog {
   cc?: string[];
   country: string;
   risk_level: string;
+  traveller_name: string;
   profiles: {
     email: string;
   };
@@ -41,6 +42,7 @@ export const NotificationsTable = ({ emailLogs, isLoading }: NotificationsTableP
           <TableHead>CC Status</TableHead>
           <TableHead>Recipient</TableHead>
           <TableHead>CC</TableHead>
+          <TableHead>Traveller</TableHead>
           <TableHead>Country</TableHead>
           <TableHead>Risk Level</TableHead>
           <TableHead>Sent By</TableHead>
@@ -49,13 +51,13 @@ export const NotificationsTable = ({ emailLogs, isLoading }: NotificationsTableP
       <TableBody>
         {isLoading ? (
           <TableRow>
-            <TableCell colSpan={8} className="text-center">
+            <TableCell colSpan={9} className="text-center">
               Loading...
             </TableCell>
           </TableRow>
         ) : !emailLogs?.length ? (
           <TableRow>
-            <TableCell colSpan={8} className="text-center">
+            <TableCell colSpan={9} className="text-center">
               No email logs found
             </TableCell>
           </TableRow>
@@ -69,7 +71,8 @@ export const NotificationsTable = ({ emailLogs, isLoading }: NotificationsTableP
               recipient_error: log.recipient_error_message,
               cc_status: log.cc_status,
               cc_error: log.cc_error_message,
-              sent_at: log.sent_at
+              sent_at: log.sent_at,
+              traveller_name: log.traveller_name
             });
             
             return (
@@ -95,6 +98,7 @@ export const NotificationsTable = ({ emailLogs, isLoading }: NotificationsTableP
                 </TableCell>
                 <TableCell>{log.recipient}</TableCell>
                 <TableCell>{log.cc?.join(", ") || "-"}</TableCell>
+                <TableCell>{log.traveller_name || "-"}</TableCell>
                 <TableCell>{log.country}</TableCell>
                 <TableCell>
                   <RiskLevelBadge level={log.risk_level} />
