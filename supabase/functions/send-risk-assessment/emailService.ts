@@ -8,6 +8,7 @@ export class EmailService {
   }
 
   async sendEmail(payload: EmailPayload): Promise<EmailResult> {
+    const startTime = Date.now();
     console.log('Sending email with payload:', payload);
 
     try {
@@ -21,7 +22,8 @@ export class EmailService {
       });
 
       const responseData = await res.json();
-      console.log('Resend API response:', responseData);
+      const endTime = Date.now();
+      console.log(`Email sent in ${endTime - startTime}ms. Response:`, responseData);
 
       if (!res.ok) {
         console.error('Resend API error response:', responseData);
@@ -36,7 +38,8 @@ export class EmailService {
         data: responseData
       };
     } catch (error) {
-      console.error('Error sending email:', error);
+      const endTime = Date.now();
+      console.error(`Error sending email after ${endTime - startTime}ms:`, error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error occurred'
