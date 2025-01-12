@@ -61,31 +61,47 @@ async function sendEmailWithResend(to: string[], subject: string, html: string) 
   }
 }
 
-async function sendCCEmail(emailData: EmailData, primaryRecipient: string) {
-  if (emailData.to.length <= 1) return null;
-
-  const ccRecipients = emailData.to.slice(1);
-  console.log('Sending CC email to:', ccRecipients);
-  console.log('Traveller name:', emailData.travellerName);
+async function sendEmails(emailData: EmailData, primaryRecipient: string) {
+  const promises = [];
   
-  const ccHtml = `
-    <div style="margin-bottom: 20px; padding: 10px; background-color: #f5f5f5; border-radius: 5px;">
-      <p style="margin: 0; color: #666;">This email was sent as a CC. The primary recipient is: <strong>${primaryRecipient}</strong></p>
-      <p style="margin: 5px 0 0; color: #666;">Risk assessment for traveller: <strong>${emailData.travellerName || 'Not specified'}</strong></p>
-      <p style="margin: 5px 0 0; color: #666;">Risk assessment details below:</p>
-    </div>
-    ${emailData.html}
-  `;
+  // Add primary email to promises array
+  promises.push(sendEmailWithResend(
+    [primaryRecipient],
+    emailData.subject,
+    emailData.html
+  ));
 
-  try {
-    return await sendEmailWithResend(
+  // If there are CC recipients, add them to promises array
+  if (emailData.to.length > 1) {
+    const ccRecipients = emailData.to.slice(1);
+    console.log('Sending CC email to:', ccRecipients);
+    console.log('Traveller name:', emailData.travellerName);
+    
+    const ccHtml = `
+      <div style="margin-bottom: 20px; padding: 10px; background-color: #f5f5f5; border-radius: 5px;">
+        <p style="margin: 0; color: #666;">This email was sent as a CC. The primary recipient is: <strong>${primaryRecipient}</strong></p>
+        <p style="margin: 5px 0 0; color: #666;">Risk assessment for traveller: <strong>${emailData.travellerName || 'Not specified'}</strong></p>
+        <p style="margin: 5px 0 0; color: #666;">Risk assessment details below:</p>
+      </div>
+      ${emailData.html}
+    `;
+
+    promises.push(sendEmailWithResend(
       ccRecipients,
       `${emailData.subject} (CC to: ${primaryRecipient})`,
       ccHtml
-    );
+    ));
+  }
+
+  try {
+    const results = await Promise.all(promises);
+    return {
+      primary: results[0],
+      cc: results[1] || null
+    };
   } catch (error) {
-    console.error('Error sending CC email:', error);
-    return { success: false, error };
+    console.error('Error sending emails:', error);
+    throw error;
   }
 }
 
@@ -107,25 +123,18 @@ export async function sendEmail(emailData: EmailData, logData: EmailLogEntry): P
     const logEntry = await createEmailLog(supabase, logData);
     console.log('Created log entry:', logEntry);
 
-    // Send primary email
-    const primaryResult = await sendEmailWithResend(
-      [emailData.to[0]],
-      emailData.subject,
-      emailData.html
-    );
-
-    // Send CC email if needed
-    const ccResult = await sendCCEmail(emailData, emailData.to[0]);
+    // Send emails concurrently
+    const emailResults = await sendEmails(emailData, emailData.to[0]);
 
     // Update log with results
     await updateEmailLog(supabase, logEntry.id, {
-      recipient_status: primaryResult.success ? 'sent' : 'failed',
-      recipient_error_message: !primaryResult.success ? JSON.stringify(primaryResult.error) : null,
-      cc_status: ccResult ? (ccResult.success ? 'sent' : 'failed') : null,
-      cc_error_message: ccResult?.error ? JSON.stringify(ccResult.error) : null,
+      recipient_status: emailResults.primary.success ? 'sent' : 'failed',
+      recipient_error_message: !emailResults.primary.success ? JSON.stringify(emailResults.primary.error) : null,
+      cc_status: emailResults.cc ? (emailResults.cc.success ? 'sent' : 'failed') : null,
+      cc_error_message: emailResults.cc?.error ? JSON.stringify(emailResults.cc.error) : null,
     });
 
-    return new Response(JSON.stringify(primaryResult.data), {
+    return new Response(JSON.stringify(emailResults.primary.data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
