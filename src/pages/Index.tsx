@@ -7,10 +7,15 @@ const Index = () => {
 
   useEffect(() => {
     const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate("/dashboard");
-      } else {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          navigate("/dashboard");
+        } else {
+          navigate("/auth");
+        }
+      } catch (error) {
+        console.error("Error checking session:", error);
         navigate("/auth");
       }
     };
@@ -18,7 +23,12 @@ const Index = () => {
     checkUser();
   }, [navigate]);
 
-  return null;
+  // Show loading state while checking auth and redirecting
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+    </div>
+  );
 };
 
 export default Index;
