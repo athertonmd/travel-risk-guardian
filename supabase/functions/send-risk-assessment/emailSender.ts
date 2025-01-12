@@ -8,6 +8,7 @@ const corsHeaders = {
 };
 
 async function createEmailLog(supabase: any, logData: EmailLogEntry) {
+  console.log('Creating email log:', logData);
   const { data: logEntry, error: logError } = await supabase
     .from('email_logs')
     .insert([logData])
@@ -25,29 +26,39 @@ async function createEmailLog(supabase: any, logData: EmailLogEntry) {
 async function sendEmailWithResend(to: string[], subject: string, html: string) {
   console.log('Sending email to:', to);
   
-  const res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-    },
-    body: JSON.stringify({
-      from: 'Travel Risk Guardian <notifications@tripguardian.corpanda.com>',
-      to,
-      subject,
-      html,
-      reply_to: 'notifications@tripguardian.corpanda.com'
-    }),
-  });
-
-  const data = await res.json();
-  
-  if (!res.ok) {
-    console.error('Resend API error:', data);
-    throw new Error(data.message || 'Failed to send email');
+  if (!RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY is not configured');
   }
+  
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: 'Travel Risk Guardian <notifications@tripguardian.corpanda.com>',
+        to,
+        subject,
+        html,
+        reply_to: 'notifications@tripguardian.corpanda.com'
+      }),
+    });
 
-  return { success: true, data };
+    if (!res.ok) {
+      const errorData = await res.json();
+      console.error('Resend API error response:', errorData);
+      throw new Error(errorData.message || 'Failed to send email');
+    }
+
+    const data = await res.json();
+    console.log('Email sent successfully:', data);
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error sending email:', error);
+    throw error;
+  }
 }
 
 async function updateEmailLog(supabase: any, logId: string, status: {
@@ -56,6 +67,7 @@ async function updateEmailLog(supabase: any, logId: string, status: {
   cc_status?: string | null;
   cc_error_message?: string | null;
 }) {
+  console.log('Updating email log:', { logId, status });
   const { error } = await supabase
     .from('email_logs')
     .update(status)
@@ -63,6 +75,7 @@ async function updateEmailLog(supabase: any, logId: string, status: {
 
   if (error) {
     console.error('Error updating email log:', error);
+    throw new Error('Failed to update email log');
   }
 }
 
@@ -70,6 +83,8 @@ async function sendCCEmail(emailData: EmailData, primaryRecipient: string) {
   if (emailData.to.length <= 1) return null;
 
   const ccRecipients = emailData.to.slice(1);
+  console.log('Sending CC email to:', ccRecipients);
+  
   const ccHtml = `
     <div style="margin-bottom: 20px; padding: 10px; background-color: #f5f5f5; border-radius: 5px;">
       <p style="margin: 0; color: #666;">This email was sent as a CC. The primary recipient is: <strong>${primaryRecipient}</strong></p>
@@ -92,17 +107,21 @@ async function sendCCEmail(emailData: EmailData, primaryRecipient: string) {
 
 export async function sendEmail(emailData: EmailData, logData: EmailLogEntry): Promise<Response> {
   try {
-    if (!RESEND_API_KEY) {
-      throw new Error('RESEND_API_KEY is not configured');
-    }
+    console.log('Starting email send process:', { emailData, logData });
 
     // Create Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing Supabase configuration');
+    }
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Create initial log entry
     const logEntry = await createEmailLog(supabase, logData);
+    console.log('Created log entry:', logEntry);
 
     // Send primary email
     const primaryResult = await sendEmailWithResend(
