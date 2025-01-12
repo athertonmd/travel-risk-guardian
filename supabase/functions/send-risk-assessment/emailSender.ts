@@ -61,34 +61,17 @@ async function sendEmailWithResend(to: string[], subject: string, html: string) 
   }
 }
 
-async function updateEmailLog(supabase: any, logId: string, status: {
-  recipient_status: string;
-  recipient_error_message?: string | null;
-  cc_status?: string | null;
-  cc_error_message?: string | null;
-}) {
-  console.log('Updating email log:', { logId, status });
-  const { error } = await supabase
-    .from('email_logs')
-    .update(status)
-    .eq('id', logId);
-
-  if (error) {
-    console.error('Error updating email log:', error);
-    throw new Error('Failed to update email log');
-  }
-}
-
 async function sendCCEmail(emailData: EmailData, primaryRecipient: string) {
   if (emailData.to.length <= 1) return null;
 
   const ccRecipients = emailData.to.slice(1);
   console.log('Sending CC email to:', ccRecipients);
+  console.log('Traveller name:', emailData.travellerName); // Add logging
   
   const ccHtml = `
     <div style="margin-bottom: 20px; padding: 10px; background-color: #f5f5f5; border-radius: 5px;">
       <p style="margin: 0; color: #666;">This email was sent as a CC. The primary recipient is: <strong>${primaryRecipient}</strong></p>
-      <p style="margin: 5px 0 0; color: #666;">Risk assessment for traveller: <strong>${emailData.travellerName}</strong></p>
+      <p style="margin: 5px 0 0; color: #666;">Risk assessment for traveller: <strong>${emailData.travellerName || 'Not specified'}</strong></p>
       <p style="margin: 5px 0 0; color: #666;">Risk assessment details below:</p>
     </div>
     ${emailData.html}
@@ -159,5 +142,23 @@ export async function sendEmail(emailData: EmailData, logData: EmailLogEntry): P
         status: 500,
       }
     );
+  }
+}
+
+async function updateEmailLog(supabase: any, logId: string, status: {
+  recipient_status: string;
+  recipient_error_message?: string | null;
+  cc_status?: string | null;
+  cc_error_message?: string | null;
+}) {
+  console.log('Updating email log:', { logId, status });
+  const { error } = await supabase
+    .from('email_logs')
+    .update(status)
+    .eq('id', logId);
+
+  if (error) {
+    console.error('Error updating email log:', error);
+    throw new Error('Failed to update email log');
   }
 }

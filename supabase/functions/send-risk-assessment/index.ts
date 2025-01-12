@@ -14,13 +14,13 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { to, cc, country, risk_level, information, user_id }: EmailRequest = await req.json();
+    const { to, cc, country, risk_level, information, user_id, travellerName }: EmailRequest = await req.json();
 
     if (!to || !country || !risk_level || !information || !user_id) {
       throw new Error('Missing required fields');
     }
 
-    console.log('Processing email request:', { to, cc, country, risk_level, user_id });
+    console.log('Processing email request:', { to, cc, country, risk_level, user_id, travellerName });
 
     // Generate email HTML content
     const html = generateEmailHtml(country, risk_level, information);
@@ -31,6 +31,7 @@ serve(async (req: Request) => {
         to: [to, ...(cc || [])],
         subject: `Risk Assessment - ${country}`,
         html,
+        travellerName
       },
       {
         recipient: to,
