@@ -8,6 +8,7 @@ interface EmailFormData {
   email: string;
   cc: string;
   requireApproval: boolean;
+  travellerName: string;
 }
 
 interface EmailRiskAssessmentFormProps {
@@ -21,6 +22,15 @@ export const EmailRiskAssessmentForm = ({ form, isSubmitting, onSubmit }: EmailR
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <div>
+        <Label htmlFor="travellerName">Traveller Name</Label>
+        <Input
+          id="travellerName"
+          type="text"
+          placeholder="Enter traveller's name"
+          {...register("travellerName", { required: true })}
+        />
+      </div>
       <div>
         <Label htmlFor="email">Recipient Email</Label>
         <Input

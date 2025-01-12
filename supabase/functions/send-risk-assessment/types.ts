@@ -5,12 +5,14 @@ export interface EmailRequest {
   risk_level: string;
   information: string;
   user_id: string;
+  travellerName: string;
 }
 
 export interface EmailData {
   to: string[];
   subject: string;
   html: string;
+  travellerName: string;
 }
 
 export interface EmailLogEntry {

@@ -88,6 +88,7 @@ async function sendCCEmail(emailData: EmailData, primaryRecipient: string) {
   const ccHtml = `
     <div style="margin-bottom: 20px; padding: 10px; background-color: #f5f5f5; border-radius: 5px;">
       <p style="margin: 0; color: #666;">This email was sent as a CC. The primary recipient is: <strong>${primaryRecipient}</strong></p>
+      <p style="margin: 5px 0 0; color: #666;">Risk assessment for traveller: <strong>${emailData.travellerName}</strong></p>
       <p style="margin: 5px 0 0; color: #666;">Risk assessment details below:</p>
     </div>
     ${emailData.html}

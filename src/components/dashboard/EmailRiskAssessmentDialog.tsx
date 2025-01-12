@@ -24,6 +24,7 @@ interface EmailFormData {
   email: string;
   cc: string;
   requireApproval: boolean;
+  travellerName: string;
 }
 
 export const EmailRiskAssessmentDialog = ({ country, assessment, information }: EmailDialogProps) => {
@@ -31,7 +32,8 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information }: 
   const { toast } = useToast();
   const form = useForm<EmailFormData>({
     defaultValues: {
-      requireApproval: false
+      requireApproval: false,
+      travellerName: "",
     }
   });
 
@@ -61,7 +63,8 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information }: 
           country,
           risk_level: assessment,
           information,
-          user_id: user.id
+          user_id: user.id,
+          travellerName: data.travellerName
         },
       });
 
