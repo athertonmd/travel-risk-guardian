@@ -60,7 +60,9 @@ export const NotificationTableRow = ({ log }: NotificationTableRowProps) => {
       </TableCell>
       <TableCell>{log.recipient}</TableCell>
       <TableCell>{log.cc?.join(", ") || "-"}</TableCell>
-      <TableCell>{log.traveller_name || "-"}</TableCell>
+      <TableCell className="font-medium">
+        {log.traveller_name || "-"}
+      </TableCell>
       <TableCell>{log.country}</TableCell>
       <TableCell>
         <RiskLevelBadge level={log.risk_level} />
