@@ -8,7 +8,6 @@ const corsHeaders = {
 };
 
 async function createEmailLog(supabase: any, logData: EmailLogEntry) {
-  console.log('Creating email log:', logData);
   const { data: logEntry, error: logError } = await supabase
     .from('email_logs')
     .insert([logData])
@@ -23,24 +22,21 @@ async function createEmailLog(supabase: any, logData: EmailLogEntry) {
   return logEntry;
 }
 
-async function sendEmailWithResend(to: string[], subject: string, html: string) {
-  console.log('Sending email to:', to);
+async function sendEmailWithResend(emailPayload: {
+  from: string;
+  to: string[];
+  subject: string;
+  html: string;
+  reply_to: string;
+}) {
+  console.log('Sending email with payload:', emailPayload);
   
   if (!RESEND_API_KEY) {
     throw new Error('RESEND_API_KEY is not configured');
   }
   
+  const startTime = Date.now();
   try {
-    const emailPayload = {
-      from: 'Travel Risk Guardian <send@tripguardian.corpanda.com>',
-      to,
-      subject,
-      html,
-      reply_to: 'support@tripguardian.corpanda.com'
-    };
-
-    console.log('Sending email with payload:', emailPayload);
-
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -51,7 +47,8 @@ async function sendEmailWithResend(to: string[], subject: string, html: string) 
     });
 
     const responseData = await res.json();
-    console.log('Resend API response:', responseData);
+    const endTime = Date.now();
+    console.log(`Email sent in ${endTime - startTime}ms. Response:`, responseData);
 
     if (!res.ok) {
       console.error('Resend API error response:', responseData);
@@ -60,59 +57,75 @@ async function sendEmailWithResend(to: string[], subject: string, html: string) 
 
     return { success: true, data: responseData };
   } catch (error) {
-    console.error('Error sending email:', error);
+    const endTime = Date.now();
+    console.error(`Email sending failed after ${endTime - startTime}ms:`, error);
     throw error;
   }
 }
 
-async function sendEmails(emailData: EmailData, primaryRecipient: string) {
-  const promises = [];
-  
-  // Add primary email to promises array
-  promises.push(sendEmailWithResend(
-    [primaryRecipient],
-    emailData.subject,
-    emailData.html
-  ));
+async function sendEmails(emailData: EmailData) {
+  const startTime = Date.now();
+  console.log('Starting batch email send at:', new Date().toISOString());
 
-  // If there are CC recipients, add them to promises array
+  const baseEmailPayload = {
+    from: 'Travel Risk Guardian <send@tripguardian.corpanda.com>',
+    reply_to: 'support@tripguardian.corpanda.com',
+    subject: emailData.subject,
+  };
+
+  // Prepare all email payloads
+  const emailPayloads = [];
+
+  // Primary recipient
+  emailPayloads.push({
+    ...baseEmailPayload,
+    to: [emailData.to[0]],
+    html: emailData.html,
+  });
+
+  // CC recipients (if any)
   if (emailData.to.length > 1) {
-    const ccRecipients = emailData.to.slice(1);
-    console.log('Sending CC email to:', ccRecipients);
-    console.log('Traveller name:', emailData.travellerName);
-    
     const ccHtml = `
       <div style="margin-bottom: 20px; padding: 10px; background-color: #f5f5f5; border-radius: 5px;">
-        <p style="margin: 0; color: #666;">This email was sent as a CC. The primary recipient is: <strong>${primaryRecipient}</strong></p>
+        <p style="margin: 0; color: #666;">This email was sent as a CC. The primary recipient is: <strong>${emailData.to[0]}</strong></p>
         <p style="margin: 5px 0 0; color: #666;">Risk assessment for traveller: <strong>${emailData.travellerName || 'Not specified'}</strong></p>
         <p style="margin: 5px 0 0; color: #666;">Risk assessment details below:</p>
       </div>
       ${emailData.html}
     `;
 
-    promises.push(sendEmailWithResend(
-      ccRecipients,
-      `${emailData.subject} (CC to: ${primaryRecipient})`,
-      ccHtml
-    ));
+    emailPayloads.push({
+      ...baseEmailPayload,
+      to: emailData.to.slice(1),
+      subject: `${emailData.subject} (CC to: ${emailData.to[0]})`,
+      html: ccHtml,
+    });
   }
 
   try {
-    const results = await Promise.all(promises);
+    // Send all emails concurrently
+    const results = await Promise.all(
+      emailPayloads.map(payload => sendEmailWithResend(payload))
+    );
+
+    const endTime = Date.now();
+    console.log(`Batch email send completed in ${endTime - startTime}ms`);
+
     return {
       primary: results[0],
       cc: results[1] || null
     };
   } catch (error) {
-    console.error('Error sending emails:', error);
+    console.error('Error in batch email send:', error);
     throw error;
   }
 }
 
 export async function sendEmail(emailData: EmailData, logData: EmailLogEntry): Promise<Response> {
-  try {
-    console.log('Starting email send process:', { emailData, logData });
+  const startTime = Date.now();
+  console.log('Starting email send process:', { emailData, logData });
 
+  try {
     // Create Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -123,13 +136,11 @@ export async function sendEmail(emailData: EmailData, logData: EmailLogEntry): P
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Create initial log entry
-    const logEntry = await createEmailLog(supabase, logData);
-    console.log('Created log entry:', logEntry);
-
-    // Send emails concurrently
-    const emailResults = await sendEmails(emailData, emailData.to[0]);
-    console.log('Email sending results:', emailResults);
+    // Create initial log entry and send emails concurrently
+    const [logEntry, emailResults] = await Promise.all([
+      createEmailLog(supabase, logData),
+      sendEmails(emailData)
+    ]);
 
     // Update log with results
     const updateData = {
@@ -139,9 +150,10 @@ export async function sendEmail(emailData: EmailData, logData: EmailLogEntry): P
       cc_error_message: emailResults.cc?.error ? JSON.stringify(emailResults.cc.error) : null,
     };
 
-    console.log('Updating email log with:', updateData);
-
     await updateEmailLog(supabase, logEntry.id, updateData);
+
+    const endTime = Date.now();
+    console.log(`Total email process completed in ${endTime - startTime}ms`);
 
     return new Response(JSON.stringify(emailResults.primary.data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -169,7 +181,6 @@ async function updateEmailLog(supabase: any, logId: string, status: {
   cc_status?: string | null;
   cc_error_message?: string | null;
 }) {
-  console.log('Updating email log:', { logId, status });
   const { error } = await supabase
     .from('email_logs')
     .update(status)
