@@ -14,7 +14,7 @@ interface EmailLog {
   cc?: string[];
   country: string;
   risk_level: string;
-  traveller_name?: string | null;
+  traveller_name: string | null;
   profiles: {
     email: string;
   };
@@ -25,7 +25,7 @@ interface NotificationTableRowProps {
 }
 
 export const NotificationTableRow = ({ log }: NotificationTableRowProps) => {
-  // Add detailed logging
+  // Add detailed logging to help debug the traveller name
   console.log('Email log details:', {
     id: log.id,
     recipient: log.recipient,
