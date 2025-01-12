@@ -26,4 +26,5 @@ export interface EmailLogEntry {
   recipient_error_message?: string | null;
   cc_error_message?: string | null;
   sent_at: string;
+  traveller_name: string | null;
 }

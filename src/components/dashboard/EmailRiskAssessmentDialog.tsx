@@ -56,6 +56,16 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information }: 
         return;
       }
 
+      console.log('Sending email with data:', {
+        to: data.email,
+        cc: ccEmails,
+        country,
+        risk_level: assessment,
+        information,
+        user_id: user.id,
+        travellerName: data.travellerName
+      });
+
       const { error, data: response } = await supabase.functions.invoke('send-risk-assessment', {
         body: {
           to: data.email,
@@ -64,7 +74,7 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information }: 
           risk_level: assessment,
           information,
           user_id: user.id,
-          travellerName: data.travellerName
+          travellerName: data.travellerName // Ensure traveller name is passed
         },
       });
 

@@ -31,7 +31,7 @@ serve(async (req: Request) => {
         to: [to, ...(cc || [])],
         subject: `Risk Assessment - ${country}`,
         html,
-        travellerName
+        travellerName: travellerName || ''
       },
       {
         recipient: to,
@@ -42,6 +42,7 @@ serve(async (req: Request) => {
         recipient_status: 'pending',
         cc_status: cc && cc.length > 0 ? 'pending' : null,
         sent_at: new Date().toISOString(),
+        traveller_name: travellerName || null // Ensure traveller name is saved
       }
     );
 
