@@ -38,11 +38,11 @@ async function sendEmailWithResend(to: string[], subject: string, html: string) 
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'Travel Risk Guardian <notifications@tripguardian.corpanda.com>',
+        from: 'Travel Risk Guardian <notifications@yourdomain.com>', // Replace with your verified domain
         to,
         subject,
         html,
-        reply_to: 'notifications@tripguardian.corpanda.com'
+        reply_to: 'notifications@yourdomain.com' // Replace with your verified domain
       }),
     });
 
@@ -66,7 +66,7 @@ async function sendCCEmail(emailData: EmailData, primaryRecipient: string) {
 
   const ccRecipients = emailData.to.slice(1);
   console.log('Sending CC email to:', ccRecipients);
-  console.log('Traveller name:', emailData.travellerName); // Add logging
+  console.log('Traveller name:', emailData.travellerName);
   
   const ccHtml = `
     <div style="margin-bottom: 20px; padding: 10px; background-color: #f5f5f5; border-radius: 5px;">
