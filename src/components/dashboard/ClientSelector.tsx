@@ -12,12 +12,14 @@ interface ClientSelectorProps {
   selectedClientId: string | null;
   onClientChange: (clientId: string, clientName?: string) => void;
   showClearOption?: boolean;
+  showAllOption?: boolean;
 }
 
 export const ClientSelector = ({ 
   selectedClientId, 
   onClientChange,
-  showClearOption 
+  showClearOption,
+  showAllOption = true // Default to true to maintain existing behavior
 }: ClientSelectorProps) => {
   const { data: clients, isLoading } = useQuery({
     queryKey: ['clients'],
@@ -57,7 +59,7 @@ export const ClientSelector = ({
           <SelectValue placeholder="Filter by client" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All Clients</SelectItem>
+          {showAllOption && <SelectItem value="all">All Clients</SelectItem>}
           {showClearOption && selectedClientId && (
             <SelectItem value="clear">Clear filter</SelectItem>
           )}

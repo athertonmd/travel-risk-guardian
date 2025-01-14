@@ -19,6 +19,7 @@ export const RiskAssessmentSearch = ({
       <ClientSelector
         selectedClientId={selectedClientId}
         onClientChange={onClientChange}
+        showAllOption={false}
       />
       <div className="flex-1">
         <Input
