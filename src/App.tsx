@@ -22,7 +22,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// Wrapper component to handle conditional sidebar rendering and auth state
 function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -70,7 +69,7 @@ function AppContent() {
   }, [navigate, isAuthPage]);
 
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider defaultOpen={false}>
       <div className="flex min-h-screen w-full">
         {!isAuthPage && <AppSidebar />}
         <div className={`flex-1 ${!isAuthPage ? 'sidebar-content-wrapper' : ''}`}>
