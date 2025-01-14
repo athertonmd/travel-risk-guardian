@@ -4,7 +4,7 @@ import { CountryPopup } from "../map/CountryPopup";
 
 interface RiskAssessmentCardProps {
   country: string;
-  assessment: string;
+  assessment: "low" | "medium" | "high" | "extreme";
   information: string;
   clientName?: string;
 }

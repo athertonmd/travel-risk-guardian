@@ -1,6 +1,8 @@
+import { RiskAssessmentCard } from "./RiskAssessmentCard";
+
 interface RiskAssessment {
   country: string;
-  assessment: string;
+  assessment: "low" | "medium" | "high" | "extreme";
   information: string;
   client_name?: string;
 }
