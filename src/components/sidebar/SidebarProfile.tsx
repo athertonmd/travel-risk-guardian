@@ -22,13 +22,13 @@ export const SidebarProfile = () => {
 
   return (
     <SidebarHeader className="border-b border-border/10 p-4">
-      <div className="flex items-center gap-2 overflow-hidden">
-        <Avatar className="h-8 w-8">
+      <div className="flex items-center gap-3">
+        <Avatar>
           <AvatarFallback>{userEmail.charAt(0).toUpperCase()}</AvatarFallback>
         </Avatar>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium leading-none">{userEmail}</p>
-          <p className="truncate text-xs text-muted-foreground">Last login: {lastLogin}</p>
+        <div className="space-y-1">
+          <p className="text-sm font-medium leading-none">{userEmail}</p>
+          <p className="text-xs text-muted-foreground">Last login: {lastLogin}</p>
         </div>
       </div>
     </SidebarHeader>

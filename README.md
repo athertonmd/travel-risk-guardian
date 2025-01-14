@@ -1,165 +1,69 @@
-# Travel Risk Guardian Application
+# Welcome to your Lovable project
 
-## Overview
+## Project info
 
-Travel Risk Guardian is a web application designed to manage and communicate travel risk assessments. The application allows users to create, manage, and share risk assessments for different countries, helping organizations maintain duty of care for their travelers.
+**URL**: https://lovable.dev/projects/ab3bf431-9b7f-4571-9060-4383736eed4a
 
-## Core Features
+## How can I edit this code?
 
-1. **Risk Assessment Management**
-   - Create/Edit/Delete risk assessments for countries
-   - Risk levels: Low, Medium, High, Extreme
-   - Detailed information storage for each assessment
-   - Real-time map visualization of global risk levels
+There are several ways of editing your application.
 
-2. **Email Notifications**
-   - Send risk assessments via email
-   - Support for CC recipients
-   - Customizable email templates
-   - Email delivery tracking and logging
+**Use Lovable**
 
-3. **Interactive World Map**
-   - Color-coded countries based on risk levels
-   - Interactive country selection
-   - Popup information display
-   - Smooth animations and transitions
+Simply visit the [Lovable Project](https://lovable.dev/projects/ab3bf431-9b7f-4571-9060-4383736eed4a) and start prompting.
 
-## Technical Architecture
+Changes made via Lovable will be committed automatically to this repo.
 
-### Frontend (React + TypeScript)
+**Use your preferred IDE**
 
-- **Framework**: React with TypeScript
-- **Styling**: Tailwind CSS + shadcn/ui components
-- **State Management**: React Query for server state
-- **Routing**: React Router
-- **Map Integration**: Mapbox GL JS
+If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
 
-### Backend (Supabase)
+The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-- **Database**: PostgreSQL (via Supabase)
-- **Authentication**: Supabase Auth
-- **API**: Supabase Edge Functions
-- **Email Service**: Resend.com API
-- **File Storage**: Supabase Storage
+Follow these steps:
 
-## Database Schema
+```sh
+# Step 1: Clone the repository using the project's Git URL.
+git clone <YOUR_GIT_URL>
 
-### Tables
+# Step 2: Navigate to the project directory.
+cd <YOUR_PROJECT_NAME>
 
-1. **risk_assessments**
-   - Stores country risk assessment data
-   - Includes country, risk level, and detailed information
-   - Tracks creation and update timestamps
+# Step 3: Install the necessary dependencies.
+npm i
 
-2. **email_logs**
-   - Records all email communications
-   - Tracks recipient status and error messages
-   - Stores CC recipient information
+# Step 4: Start the development server with auto-reloading and an instant preview.
+npm run dev
+```
 
-3. **profiles**
-   - User profile information
-   - Links to Supabase authentication
+**Edit a file directly in GitHub**
 
-## Key Components
+- Navigate to the desired file(s).
+- Click the "Edit" button (pencil icon) at the top right of the file view.
+- Make your changes and commit the changes.
 
-### Dashboard (/dashboard)
-- Main interface for viewing risk assessments
-- Interactive world map
-- Risk assessment cards
-- Search functionality
+**Use GitHub Codespaces**
 
-### Admin Panel (/admin/risk-assessments)
-- Risk assessment management interface
-- CRUD operations for assessments
-- Bulk operations support
+- Navigate to the main page of your repository.
+- Click on the "Code" button (green button) near the top right.
+- Select the "Codespaces" tab.
+- Click on "New codespace" to launch a new Codespace environment.
+- Edit files directly within the Codespace and commit and push your changes once you're done.
 
-### Email Logs (/admin/notifications)
-- Email tracking and monitoring
-- Status updates
-- Error reporting
+## What technologies are used for this project?
 
-## Common Issues & Troubleshooting
+This project is built with .
 
-### Email Delivery Issues
+- Vite
+- TypeScript
+- React
+- shadcn-ui
+- Tailwind CSS
 
-1. **Delayed Emails**
-   - Check Edge Function logs for timing
-   - Verify Resend API response times
-   - Monitor email_logs table for status updates
+## How can I deploy this project?
 
-2. **Failed Deliveries**
-   - Check recipient_status in email_logs
-   - Verify email format and domain validation
-   - Review Edge Function error logs
+Simply open [Lovable](https://lovable.dev/projects/ab3bf431-9b7f-4571-9060-4383736eed4a) and click on Share -> Publish.
 
-### Map Display Issues
+## I want to use a custom domain - is that possible?
 
-1. **Countries Not Showing**
-   - Verify Mapbox token in Edge Function secrets
-   - Check browser console for Mapbox errors
-   - Validate risk_assessments data
-
-2. **Color Updates Not Reflecting**
-   - Verify risk_assessments table updates
-   - Check React Query cache invalidation
-   - Review browser console logs
-
-## Monitoring & Debugging
-
-### Edge Function Logs
-- Access via Supabase Dashboard
-- Monitor email sending performance
-- Track API interactions
-
-### Database Monitoring
-- Review RLS policies for access issues
-- Monitor table sizes and query performance
-- Track real-time updates
-
-### Frontend Monitoring
-- Browser console logs
-- React Query devtools
-- Network request timing
-
-## Security Considerations
-
-1. **Row Level Security (RLS)**
-   - Enforced on all tables
-   - Profile-based access control
-   - Public/private data separation
-
-2. **API Security**
-   - Edge Function authentication
-   - CORS policies
-   - Rate limiting
-
-## Environment Variables
-
-Required environment variables:
-- `RESEND_API_KEY`: For email service
-- `MAPBOX_TOKEN`: For map functionality
-- Supabase connection details (auto-configured)
-
-## Deployment
-
-The application is deployed via Lovable's deployment system. For custom deployments:
-1. Export the codebase
-2. Configure environment variables
-3. Set up Supabase project
-4. Deploy to preferred hosting platform
-
-## Future Improvements
-
-Potential areas for enhancement:
-1. Email template customization
-2. Bulk risk assessment updates
-3. Advanced reporting features
-4. Real-time collaboration tools
-5. Mobile app development
-
-## Support Resources
-
-- [Supabase Documentation](https://supabase.com/docs)
-- [Mapbox GL JS Documentation](https://docs.mapbox.com/mapbox-gl-js/guides/)
-- [Resend API Documentation](https://resend.com/docs)
-- [React Query Documentation](https://tanstack.com/query/latest)
+We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
