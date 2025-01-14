@@ -18,9 +18,9 @@ interface NotificationsTableProps {
 export const NotificationsTable = ({ emailLogs, isLoading }: NotificationsTableProps) => {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
 
-  const filteredLogs = emailLogs?.filter(log => 
-    !selectedClientId || log.client_id === selectedClientId
-  );
+  const filteredLogs = selectedClientId 
+    ? emailLogs?.filter(log => log.client_id === selectedClientId)
+    : emailLogs;
 
   const handleClientChange = (clientId: string) => {
     setSelectedClientId(clientId === selectedClientId ? null : clientId);
