@@ -33,6 +33,7 @@ export const useEmailLogs = () => {
               email
             ),
             clients (
+              id,
               name
             )
           `)
