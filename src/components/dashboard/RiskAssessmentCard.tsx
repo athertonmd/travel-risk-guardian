@@ -14,7 +14,7 @@ export const RiskAssessmentCard = ({ country, assessment, information, clientNam
     <Card className="relative">
       <CardContent className="p-4">
         <CountryPopup
-          assessment={{ country, assessment, information }}
+          assessment={{ id: country, country, assessment, information }}
           triggerElement={<h3 className="text-lg font-semibold mb-2">{country}</h3>}
         />
         <p className="text-sm text-muted-foreground mb-2">{information}</p>
