@@ -37,7 +37,7 @@ export const ClientSelector = ({ selectedClientId, onClientChange }: ClientSelec
   if (isLoading) return null;
 
   return (
-    <div className="w-full max-w-xs">
+    <div className="w-[200px] min-w-[200px]">
       <Select
         value={selectedClientId || undefined}
         onValueChange={handleChange}

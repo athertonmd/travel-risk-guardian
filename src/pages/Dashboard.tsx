@@ -120,15 +120,17 @@ const Dashboard = () => {
         <DashboardHeader selectedClientName={selectedClientName} />
         
         <div className="max-w-7xl mx-auto space-y-8">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
             <ClientSelector
               selectedClientId={selectedClientId}
               onClientChange={handleClientChange}
             />
-            <DashboardSearch 
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-            />
+            <div className="flex-1 w-full">
+              <DashboardSearch 
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+              />
+            </div>
           </div>
 
           {selectedClientId && (
