@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface ClientSelectorProps {
   selectedClientId: string | null;
-  onClientChange: (clientId: string) => void;
+  onClientChange: (clientId: string, clientName: string) => void;
 }
 
 export const ClientSelector = ({ selectedClientId, onClientChange }: ClientSelectorProps) => {
@@ -27,13 +27,20 @@ export const ClientSelector = ({ selectedClientId, onClientChange }: ClientSelec
     },
   });
 
+  const handleChange = (clientId: string) => {
+    const selectedClient = clients?.find(client => client.id === clientId);
+    if (selectedClient) {
+      onClientChange(clientId, selectedClient.name);
+    }
+  };
+
   if (isLoading) return null;
 
   return (
     <div className="w-full max-w-xs">
       <Select
         value={selectedClientId || undefined}
-        onValueChange={onClientChange}
+        onValueChange={handleChange}
       >
         <SelectTrigger className="w-full">
           <SelectValue placeholder="Select a client" />

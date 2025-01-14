@@ -13,6 +13,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [selectedClientName, setSelectedClientName] = useState<string | null>(null);
 
   const { data: assessments = [], isLoading, error } = useQuery({
     queryKey: ['risk-assessments', selectedClientId],
@@ -34,18 +35,7 @@ const Dashboard = () => {
           throw supabaseError;
         }
 
-        // If no data is returned for a specific client, fetch all risk assessments
-        if (!data || data.length === 0) {
-          const { data: allData, error: allDataError } = await supabase
-            .from('risk_assessments')
-            .select('*')
-            .order('country');
-          
-          if (allDataError) throw allDataError;
-          return allData || [];
-        }
-        
-        return data;
+        return data || [];
       } catch (err) {
         console.error('Error fetching risk assessments:', err);
         toast({
@@ -60,6 +50,11 @@ const Dashboard = () => {
 
   const handleCountryClick = (country: string) => {
     setSearchTerm(country);
+  };
+
+  const handleClientChange = (clientId: string, clientName: string) => {
+    setSelectedClientId(clientId);
+    setSelectedClientName(clientName);
   };
 
   const filteredAssessments = assessments.filter((assessment) => {
@@ -122,13 +117,13 @@ const Dashboard = () => {
   return (
     <div className="flex-1 w-full">
       <div className="p-6">
-        <DashboardHeader />
+        <DashboardHeader selectedClientName={selectedClientName} />
         
         <div className="max-w-7xl mx-auto space-y-8">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             <ClientSelector
               selectedClientId={selectedClientId}
-              onClientChange={setSelectedClientId}
+              onClientChange={handleClientChange}
             />
             <DashboardSearch 
               searchTerm={searchTerm}
@@ -136,13 +131,23 @@ const Dashboard = () => {
             />
           </div>
 
-          <RiskMap 
-            assessments={filteredAssessments} 
-            searchTerm={searchTerm}
-            onCountryClick={handleCountryClick}
-          />
+          {selectedClientId && (
+            <>
+              <RiskMap 
+                assessments={filteredAssessments} 
+                searchTerm={searchTerm}
+                onCountryClick={handleCountryClick}
+              />
 
-          <RiskAssessmentGrid assessments={filteredAssessments} />
+              <RiskAssessmentGrid assessments={filteredAssessments} />
+            </>
+          )}
+
+          {!selectedClientId && (
+            <div className="flex justify-center items-center min-h-[400px]">
+              <p className="text-gray-500">Please select a client to view risk assessments.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
