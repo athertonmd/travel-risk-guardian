@@ -29,10 +29,10 @@ export const useEmailLogs = () => {
           .from('email_logs')
           .select(`
             *,
-            profiles (
+            profiles:sent_by (
               email
             ),
-            clients (
+            clients!inner (
               name
             )
           `)
