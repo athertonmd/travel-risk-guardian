@@ -9,7 +9,11 @@ export const RiskAssessmentGrid = ({ assessments }: RiskAssessmentGridProps) => 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       {assessments.map((assessment) => (
-        <RiskAssessmentCard key={assessment.id} assessment={assessment} />
+        <RiskAssessmentCard 
+          key={assessment.id} 
+          assessment={assessment}
+          clientId={assessment.client_id} 
+        />
       ))}
     </div>
   );

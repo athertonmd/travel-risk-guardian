@@ -18,6 +18,7 @@ interface EmailDialogProps {
   country: string;
   assessment: string;
   information: string;
+  clientId?: string;
   clientName?: string;
 }
 
@@ -29,7 +30,7 @@ interface EmailFormData {
   recordLocator: string;
 }
 
-export const EmailRiskAssessmentDialog = ({ country, assessment, information, clientName }: EmailDialogProps) => {
+export const EmailRiskAssessmentDialog = ({ country, assessment, information, clientId, clientName }: EmailDialogProps) => {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const form = useForm<EmailFormData>({
@@ -67,7 +68,8 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information, cl
         information,
         user_id: user.id,
         travellerName: data.travellerName,
-        recordLocator: data.recordLocator
+        recordLocator: data.recordLocator,
+        client_id: clientId
       });
 
       const { error, data: response } = await supabase.functions.invoke('send-risk-assessment', {
@@ -79,7 +81,8 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information, cl
           information,
           user_id: user.id,
           travellerName: data.travellerName,
-          recordLocator: data.recordLocator
+          recordLocator: data.recordLocator,
+          client_id: clientId
         },
       });
 
