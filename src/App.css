@@ -34,54 +34,34 @@
   color: #888;
 }
 
-/* Sidebar styling */
+/* Add proper sidebar styling */
 :root {
   --sidebar-width: 260px;
   --sidebar-width-icon: 64px;
 }
 
+/* Ensure sidebar is properly positioned */
 [data-sidebar="sidebar"] {
   position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: var(--sidebar-width);
-  background-color: hsl(var(--background));
-  border-right: 1px solid hsl(var(--border));
-  z-index: 40;
-  transition: width 0.2s ease;
+  z-index: 50;
+  height: 100vh;
+  background-color: hsl(var(--sidebar-background));
 }
 
-/* Main content wrapper */
-.main-content {
+/* Ensure content doesn't overlap with sidebar */
+.sidebar-content-wrapper {
   margin-left: var(--sidebar-width);
-  width: calc(100% - var(--sidebar-width));
-  min-height: 100vh;
-  transition: margin-left 0.2s ease, width 0.2s ease;
+  transition: margin-left 0.2s ease;
 }
 
-/* Collapsed state */
-.sidebar-collapsed [data-sidebar="sidebar"] {
-  width: var(--sidebar-width-icon);
-}
-
-.sidebar-collapsed .main-content {
+/* Adjust margin when sidebar is collapsed */
+.sidebar-collapsed .sidebar-content-wrapper {
   margin-left: var(--sidebar-width-icon);
-  width: calc(100% - var(--sidebar-width-icon));
 }
 
-/* Mobile adjustments */
+/* Mobile sidebar adjustments */
 @media (max-width: 768px) {
-  .main-content {
+  .sidebar-content-wrapper {
     margin-left: 0;
-    width: 100%;
-  }
-  
-  [data-sidebar="sidebar"] {
-    transform: translateX(-100%);
-  }
-  
-  .sidebar-open [data-sidebar="sidebar"] {
-    transform: translateX(0);
   }
 }
