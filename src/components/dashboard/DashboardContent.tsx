@@ -26,6 +26,7 @@ export const DashboardContent = ({
         <ClientSelector
           selectedClientId={selectedClientId}
           onClientChange={handleClientChange}
+          showAllOption={false}
         />
         <div className="flex-1 w-full">
           <DashboardSearch 

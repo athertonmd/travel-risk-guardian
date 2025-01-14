@@ -19,7 +19,7 @@ export const ClientSelector = ({
   selectedClientId, 
   onClientChange,
   showClearOption,
-  showAllOption = true // Default to true to maintain existing behavior
+  showAllOption = false
 }: ClientSelectorProps) => {
   const { data: clients, isLoading } = useQuery({
     queryKey: ['clients'],
@@ -52,11 +52,11 @@ export const ClientSelector = ({
   return (
     <div className="w-[200px] min-w-[200px]">
       <Select
-        value={selectedClientId || 'all'}
+        value={selectedClientId || undefined}
         onValueChange={handleChange}
       >
         <SelectTrigger className="w-full">
-          <SelectValue placeholder="Filter by client" />
+          <SelectValue placeholder="Select a client" />
         </SelectTrigger>
         <SelectContent>
           {showAllOption && <SelectItem value="all">All Clients</SelectItem>}
