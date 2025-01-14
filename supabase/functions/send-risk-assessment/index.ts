@@ -21,7 +21,14 @@ async function sendEmails(emailData: EmailData, primaryRecipient: string, ccReci
       from: SENDER_EMAIL,
       to: [primaryRecipient],
       subject: emailData.subject,
-      html: emailData.html,
+      html: generateEmailHtml(
+        emailData.country,
+        emailData.risk_level,
+        emailData.information,
+        false,
+        emailData.travellerName,
+        emailData.recordLocator
+      ),
       reply_to: REPLY_TO_EMAIL
     })
   );
@@ -35,7 +42,14 @@ async function sendEmails(emailData: EmailData, primaryRecipient: string, ccReci
         <p style="margin: 5px 0 0; color: #666;">Risk assessment for traveller: <strong>${emailData.travellerName || 'Not specified'}</strong></p>
         <p style="margin: 5px 0 0; color: #666;">Risk assessment details below:</p>
       </div>
-      ${emailData.html}
+      ${generateEmailHtml(
+        emailData.country,
+        emailData.risk_level,
+        emailData.information,
+        true,
+        emailData.travellerName,
+        emailData.recordLocator
+      )}
     `;
 
     emailPromises.push(
@@ -68,9 +82,19 @@ serve(async (req) => {
     const emailData: EmailData = {
       to: [requestData.to, ...(requestData.cc || [])],
       subject: `Risk Assessment - ${requestData.country}`,
-      html: generateEmailHtml(requestData.country, requestData.risk_level, requestData.information),
+      html: generateEmailHtml(
+        requestData.country,
+        requestData.risk_level,
+        requestData.information,
+        false,
+        requestData.travellerName,
+        requestData.recordLocator
+      ),
       country: requestData.country,
-      travellerName: requestData.travellerName
+      travellerName: requestData.travellerName,
+      risk_level: requestData.risk_level,
+      information: requestData.information,
+      recordLocator: requestData.recordLocator
     };
 
     // Create log entry and send emails concurrently
@@ -106,7 +130,7 @@ serve(async (req) => {
       status: emailResults.primary.success ? 200 : 500,
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in send-risk-assessment function:', error);
     return new Response(
       JSON.stringify({

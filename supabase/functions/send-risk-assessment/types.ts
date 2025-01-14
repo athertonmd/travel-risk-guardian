@@ -30,6 +30,9 @@ export interface EmailData {
   html: string;
   country: string;
   travellerName?: string | null;
+  risk_level: string;
+  information: string;
+  recordLocator?: string | null;
 }
 
 export interface EmailLogEntry {
