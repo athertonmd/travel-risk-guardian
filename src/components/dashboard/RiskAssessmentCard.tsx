@@ -1,30 +1,38 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { RiskAssessment } from "@/components/dashboard/RiskMap";
 import { EmailRiskAssessmentDialog } from "./EmailRiskAssessmentDialog";
-import { CountryPopup } from "../map/CountryPopup";
 
 interface RiskAssessmentCardProps {
-  country: string;
-  assessment: "low" | "medium" | "high" | "extreme";
-  information: string;
-  clientName?: string;
+  assessment: RiskAssessment;
 }
 
-export const RiskAssessmentCard = ({ country, assessment, information, clientName }: RiskAssessmentCardProps) => {
+export const RiskAssessmentCard = ({ assessment }: RiskAssessmentCardProps) => {
+  const getRiskColor = (risk: string) => {
+    switch (risk) {
+      case 'low':
+        return 'bg-green-100 text-green-800';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'high':
+        return 'bg-orange-100 text-orange-800';
+      default:
+        return 'bg-red-100 text-red-800';
+    }
+  };
+
   return (
-    <Card className="relative">
-      <CardContent className="p-4">
-        <CountryPopup
-          assessment={{ id: country, country, assessment, information }}
-          triggerElement={<h3 className="text-lg font-semibold mb-2">{country}</h3>}
-        />
-        <p className="text-sm text-muted-foreground mb-2">{information}</p>
-        <EmailRiskAssessmentDialog
-          country={country}
-          assessment={assessment}
-          information={information}
-          clientName={clientName}
-        />
-      </CardContent>
-    </Card>
+    <div className="relative p-6 rounded-lg border bg-white shadow-sm hover:shadow-md transition-shadow">
+      <EmailRiskAssessmentDialog
+        country={assessment.country}
+        assessment={assessment.assessment}
+        information={assessment.information}
+      />
+      <h3 className="text-lg font-semibold mb-2">{assessment.country}</h3>
+      <div className="mb-2">
+        <span className={`inline-block px-2 py-1 rounded text-sm font-medium ${getRiskColor(assessment.assessment)}`}>
+          {assessment.assessment.toUpperCase()}
+        </span>
+      </div>
+      <p className="text-gray-600">{assessment.information}</p>
+    </div>
   );
 };
