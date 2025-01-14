@@ -11,6 +11,7 @@ export interface RiskAssessment {
   country: string;
   assessment: "low" | "medium" | "high" | "extreme";
   information: string;
+  client_id?: string;
 }
 
 interface RiskMapProps {
