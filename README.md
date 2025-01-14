@@ -1,69 +1,126 @@
 # Welcome to your Lovable project
 
-## Project info
+## Project Overview
+
+This is a risk assessment notification system that allows users to:
+- View and manage risk assessments for different countries
+- Send email notifications about risk levels
+- Track email notification history
+- Filter and manage notifications by client
 
 **URL**: https://lovable.dev/projects/ab3bf431-9b7f-4571-9060-4383736eed4a
 
-## How can I edit this code?
+## Development Setup
 
-There are several ways of editing your application.
+### Prerequisites
 
-**Use Lovable**
+- Node.js & npm - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- Git for version control
+- A code editor (VS Code recommended)
+
+### Local Development
+
+There are several ways to work with this codebase:
+
+**1. Using Lovable (Recommended for Quick Changes)**
 
 Simply visit the [Lovable Project](https://lovable.dev/projects/ab3bf431-9b7f-4571-9060-4383736eed4a) and start prompting.
+Changes made via Lovable will be committed automatically to the repository.
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+**2. Local Development Setup**
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# Clone the repository
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
+# Navigate to project directory
 cd <YOUR_PROJECT_NAME>
 
-# Step 3: Install the necessary dependencies.
+# Install dependencies
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+**3. GitHub Codespaces**
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+1. Navigate to the repository on GitHub
+2. Click "Code" > "Codespaces" tab
+3. Click "New codespace"
+4. Make changes directly in the browser-based IDE
 
-**Use GitHub Codespaces**
+**4. Direct GitHub Editing**
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+For quick file edits:
+1. Navigate to the file on GitHub
+2. Click the pencil icon (Edit)
+3. Make changes and commit
 
-## What technologies are used for this project?
+## Technology Stack
 
-This project is built with .
+This project is built with modern web technologies:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Vite**: Fast build tool and development server
+- **TypeScript**: Type-safe JavaScript
+- **React**: UI framework
+- **shadcn/ui**: Component library
+- **Tailwind CSS**: Utility-first CSS framework
+- **Supabase**: Backend services (auth, database, storage)
+- **TanStack Query**: Data fetching and state management
 
-## How can I deploy this project?
+## Project Structure
 
-Simply open [Lovable](https://lovable.dev/projects/ab3bf431-9b7f-4571-9060-4383736eed4a) and click on Share -> Publish.
+```
+src/
+├── components/     # Reusable UI components
+├── hooks/         # Custom React hooks
+├── pages/         # Page components
+├── types/         # TypeScript type definitions
+└── utils/         # Utility functions
+```
 
-## I want to use a custom domain - is that possible?
+## Deployment
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+### Quick Deploy
+
+1. Open [Lovable](https://lovable.dev/projects/ab3bf431-9b7f-4571-9060-4383736eed4a)
+2. Click Share -> Publish
+
+### Custom Domain Setup
+
+While we don't currently support custom domains directly, you can deploy to Netlify:
+1. Export the project from Lovable
+2. Follow our [Custom domains guide](https://docs.lovable.dev/tips-tricks/custom-domain/)
+
+## Support & Troubleshooting
+
+### Common Issues
+
+1. **Build Errors**
+   - Run `npm install` to ensure all dependencies are up to date
+   - Check console for specific error messages
+   - Verify TypeScript types are correct
+
+2. **Database Issues**
+   - Check Supabase connection settings
+   - Verify RLS policies are configured correctly
+   - Review database logs for errors
+
+### Getting Help
+
+- **Documentation**: Visit [Lovable Docs](https://docs.lovable.dev/)
+- **Community**: Join our [Discord](https://discord.gg/lovable)
+- **Issues**: Report bugs through the GitHub repository
+- **Updates**: Follow [@LovableHQ](https://twitter.com/LovableHQ) for news
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+## License
+
+This project is proprietary and confidential. All rights reserved.
