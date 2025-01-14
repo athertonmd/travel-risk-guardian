@@ -7,26 +7,42 @@ import { DashboardSearch } from "@/components/dashboard/DashboardSearch";
 import { RiskAssessmentGrid } from "@/components/dashboard/RiskAssessmentGrid";
 import { ClientSelector } from "@/components/dashboard/ClientSelector";
 import RiskMap from "@/components/dashboard/RiskMap";
+import { toast } from "@/components/ui/use-toast";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
 
-  const { data: assessments = [], isLoading } = useQuery({
+  const { data: assessments = [], isLoading, error } = useQuery({
     queryKey: ['risk-assessments', selectedClientId],
     queryFn: async () => {
-      const query = supabase
-        .from('risk_assessments')
-        .select('*');
-      
-      if (selectedClientId) {
-        query.eq('client_id', selectedClientId);
+      try {
+        let query = supabase
+          .from('risk_assessments')
+          .select('*');
+        
+        if (selectedClientId) {
+          query = query.eq('client_id', selectedClientId);
+        }
+        
+        const { data, error: supabaseError } = await query;
+        
+        if (supabaseError) {
+          console.error('Supabase query error:', supabaseError);
+          throw supabaseError;
+        }
+        
+        return data || [];
+      } catch (err) {
+        console.error('Error fetching risk assessments:', err);
+        toast({
+          title: "Error",
+          description: "Failed to load risk assessments. Please try again.",
+          variant: "destructive",
+        });
+        throw err;
       }
-      
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
     },
   });
 
@@ -60,6 +76,36 @@ const Dashboard = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="flex-1 w-full">
+        <div className="p-6">
+          <DashboardHeader />
+          <div className="max-w-7xl mx-auto space-y-8">
+            <div className="flex justify-center items-center min-h-[400px]">
+              <p className="text-gray-500">Loading risk assessments...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex-1 w-full">
+        <div className="p-6">
+          <DashboardHeader />
+          <div className="max-w-7xl mx-auto space-y-8">
+            <div className="flex justify-center items-center min-h-[400px]">
+              <p className="text-red-500">Failed to load risk assessments. Please try refreshing the page.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 w-full">
