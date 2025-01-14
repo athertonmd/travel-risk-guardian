@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -73,7 +73,6 @@ export const EditRiskAssessmentDialog = ({
     },
   });
 
-  // Reset form with assessment data when dialog opens
   useEffect(() => {
     if (assessment && open) {
       form.reset({

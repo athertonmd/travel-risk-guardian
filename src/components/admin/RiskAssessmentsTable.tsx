@@ -22,6 +22,7 @@ interface RiskAssessment {
   information: string;
   created_at: string;
   updated_at: string;
+  client_id: string | null;
   profiles?: {
     email: string;
   };
