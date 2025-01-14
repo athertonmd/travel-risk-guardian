@@ -33,6 +33,7 @@ interface RiskAssessment {
   country: string;
   assessment: "low" | "medium" | "high" | "extreme";
   information: string;
+  client_id: string | null;
 }
 
 interface EditRiskAssessmentDialogProps {
@@ -55,6 +56,20 @@ export const EditRiskAssessmentDialog = ({
       country: "",
       assessment: "low",
       information: "",
+      client_id: null,
+    },
+  });
+
+  const { data: clients } = useQuery({
+    queryKey: ['clients'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .order('name');
+      
+      if (error) throw error;
+      return data;
     },
   });
 
@@ -66,6 +81,7 @@ export const EditRiskAssessmentDialog = ({
         country: assessment.country,
         assessment: assessment.assessment,
         information: assessment.information,
+        client_id: assessment.client_id,
       });
     }
   }, [assessment, open, form]);
@@ -89,6 +105,7 @@ export const EditRiskAssessmentDialog = ({
           country: values.country,
           assessment: values.assessment,
           information: values.information,
+          client_id: values.client_id,
         })
         .eq("id", values.id);
 
@@ -121,6 +138,34 @@ export const EditRiskAssessmentDialog = ({
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
+              name="client_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Client</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value || undefined}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a client" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {clients?.map((client) => (
+                        <SelectItem key={client.id} value={client.id}>
+                          {client.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="country"
               render={({ field }) => (
                 <FormItem>
@@ -132,6 +177,7 @@ export const EditRiskAssessmentDialog = ({
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="assessment"
@@ -158,6 +204,7 @@ export const EditRiskAssessmentDialog = ({
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="information"
@@ -174,6 +221,7 @@ export const EditRiskAssessmentDialog = ({
                 </FormItem>
               )}
             />
+
             <Button type="submit" className="w-full">
               Update Assessment
             </Button>

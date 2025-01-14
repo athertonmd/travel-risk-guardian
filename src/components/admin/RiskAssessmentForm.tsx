@@ -17,11 +17,14 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { UseFormReturn } from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface FormValues {
   country: string;
   assessment: "low" | "medium" | "high" | "extreme";
   information: string;
+  clientId: string;
 }
 
 interface RiskAssessmentFormProps {
@@ -30,9 +33,50 @@ interface RiskAssessmentFormProps {
 }
 
 export const RiskAssessmentForm = ({ form, onSubmit }: RiskAssessmentFormProps) => {
+  const { data: clients } = useQuery({
+    queryKey: ['clients'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .order('name');
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
   return (
     <Form {...form}>
       <form onSubmit={onSubmit} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="clientId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Client</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a client" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {clients?.map((client) => (
+                    <SelectItem key={client.id} value={client.id}>
+                      {client.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <FormField
           control={form.control}
           name="country"
@@ -46,6 +90,7 @@ export const RiskAssessmentForm = ({ form, onSubmit }: RiskAssessmentFormProps) 
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="assessment"
@@ -72,6 +117,7 @@ export const RiskAssessmentForm = ({ form, onSubmit }: RiskAssessmentFormProps) 
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="information"
@@ -88,8 +134,9 @@ export const RiskAssessmentForm = ({ form, onSubmit }: RiskAssessmentFormProps) 
             </FormItem>
           )}
         />
+
         <Button type="submit" className="w-full">
-          Add Assessment
+          {form.formState.isSubmitting ? "Submitting..." : "Submit Assessment"}
         </Button>
       </form>
     </Form>

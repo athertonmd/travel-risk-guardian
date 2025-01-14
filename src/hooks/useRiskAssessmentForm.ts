@@ -7,6 +7,7 @@ interface FormValues {
   country: string;
   assessment: "low" | "medium" | "high" | "extreme";
   information: string;
+  clientId: string;
 }
 
 export const useRiskAssessmentForm = (onSuccess: () => void) => {
@@ -18,6 +19,7 @@ export const useRiskAssessmentForm = (onSuccess: () => void) => {
       country: "",
       assessment: "low",
       information: "",
+      clientId: "",
     },
   });
 
@@ -56,6 +58,7 @@ export const useRiskAssessmentForm = (onSuccess: () => void) => {
           assessment: values.assessment,
           information: values.information,
           amended_by: profileData.id,
+          client_id: values.clientId,
         });
 
       if (error) throw error;
