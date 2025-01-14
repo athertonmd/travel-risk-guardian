@@ -79,6 +79,12 @@ serve(async (req) => {
 
   try {
     const requestData = await req.json();
+    console.log('Received request data:', {
+      ...requestData,
+      client_id: requestData.client_id || 'not provided',
+      user_id: requestData.user_id || 'not provided'
+    });
+
     const emailData: EmailData = {
       to: [requestData.to, ...(requestData.cc || [])],
       subject: `Risk Assessment - ${requestData.country}`,
@@ -97,6 +103,16 @@ serve(async (req) => {
       recordLocator: requestData.recordLocator
     };
 
+    console.log('Creating email log with data:', {
+      recipient: requestData.to,
+      cc: requestData.cc?.length > 0 ? requestData.cc : null,
+      country: requestData.country,
+      risk_level: requestData.risk_level,
+      sent_by: requestData.user_id,
+      client_id: requestData.client_id || null,
+      traveller_name: requestData.travellerName || null
+    });
+
     // Create log entry and send emails concurrently
     const [logEntry, emailResults] = await Promise.all([
       emailLogger.createLog({
@@ -108,7 +124,8 @@ serve(async (req) => {
         recipient_status: 'pending',
         cc_status: requestData.cc?.length > 0 ? 'pending' : null,
         sent_at: new Date().toISOString(),
-        traveller_name: requestData.travellerName || null
+        traveller_name: requestData.travellerName || null,
+        client_id: requestData.client_id || null
       }),
       sendEmails(
         emailData,
@@ -116,6 +133,9 @@ serve(async (req) => {
         requestData.cc || []
       )
     ]);
+
+    console.log('Email log created:', logEntry);
+    console.log('Email results:', emailResults);
 
     // Update log with results
     await emailLogger.updateLog(logEntry.id, {
