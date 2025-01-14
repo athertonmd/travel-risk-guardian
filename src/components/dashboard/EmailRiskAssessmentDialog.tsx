@@ -18,6 +18,7 @@ interface EmailDialogProps {
   country: string;
   assessment: string;
   information: string;
+  clientName?: string;
 }
 
 interface EmailFormData {
@@ -28,7 +29,7 @@ interface EmailFormData {
   recordLocator: string;
 }
 
-export const EmailRiskAssessmentDialog = ({ country, assessment, information }: EmailDialogProps) => {
+export const EmailRiskAssessmentDialog = ({ country, assessment, information, clientName }: EmailDialogProps) => {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const form = useForm<EmailFormData>({
@@ -109,7 +110,9 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information }: 
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Email Risk Assessment</DialogTitle>
+          <DialogTitle>
+            Email Risk Assessment{clientName ? ` for ${clientName}` : ''}
+          </DialogTitle>
           <DialogDescription>
             Send this risk assessment report via email.
           </DialogDescription>
