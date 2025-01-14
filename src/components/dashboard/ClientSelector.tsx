@@ -10,10 +10,15 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface ClientSelectorProps {
   selectedClientId: string | null;
-  onClientChange: (clientId: string, clientName: string) => void;
+  onClientChange: (clientId: string, clientName?: string) => void;
+  showClearOption?: boolean;
 }
 
-export const ClientSelector = ({ selectedClientId, onClientChange }: ClientSelectorProps) => {
+export const ClientSelector = ({ 
+  selectedClientId, 
+  onClientChange,
+  showClearOption 
+}: ClientSelectorProps) => {
   const { data: clients, isLoading } = useQuery({
     queryKey: ['clients'],
     queryFn: async () => {
@@ -31,6 +36,8 @@ export const ClientSelector = ({ selectedClientId, onClientChange }: ClientSelec
     const selectedClient = clients?.find(client => client.id === clientId);
     if (selectedClient) {
       onClientChange(clientId, selectedClient.name);
+    } else if (clientId === 'clear' && showClearOption) {
+      onClientChange(selectedClientId!);
     }
   };
 
@@ -43,9 +50,12 @@ export const ClientSelector = ({ selectedClientId, onClientChange }: ClientSelec
         onValueChange={handleChange}
       >
         <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select a client" />
+          <SelectValue placeholder="Filter by client" />
         </SelectTrigger>
         <SelectContent>
+          {showClearOption && selectedClientId && (
+            <SelectItem value="clear">Clear filter</SelectItem>
+          )}
           {clients?.map((client) => (
             <SelectItem key={client.id} value={client.id}>
               {client.name}

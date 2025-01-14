@@ -6,6 +6,8 @@ import {
 } from "@/components/ui/table";
 import { NotificationTableRow } from "./NotificationTableRow";
 import { NotificationTableHeader } from "./NotificationTableHeader";
+import { ClientSelector } from "../dashboard/ClientSelector";
+import { useState } from "react";
 import type { EmailLog } from "@/types/email-logs";
 
 interface NotificationsTableProps {
@@ -14,28 +16,47 @@ interface NotificationsTableProps {
 }
 
 export const NotificationsTable = ({ emailLogs, isLoading }: NotificationsTableProps) => {
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+
+  const filteredLogs = emailLogs?.filter(log => 
+    !selectedClientId || log.client_id === selectedClientId
+  );
+
+  const handleClientChange = (clientId: string) => {
+    setSelectedClientId(clientId === selectedClientId ? null : clientId);
+  };
+
   return (
-    <Table>
-      <NotificationTableHeader />
-      <TableBody>
-        {isLoading ? (
-          <TableRow>
-            <TableCell colSpan={10} className="text-center">
-              Loading...
-            </TableCell>
-          </TableRow>
-        ) : !emailLogs?.length ? (
-          <TableRow>
-            <TableCell colSpan={10} className="text-center">
-              No email logs found
-            </TableCell>
-          </TableRow>
-        ) : (
-          emailLogs.map((log) => (
-            <NotificationTableRow key={log.id} log={log} />
-          ))
-        )}
-      </TableBody>
-    </Table>
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <ClientSelector 
+          selectedClientId={selectedClientId} 
+          onClientChange={handleClientChange}
+          showClearOption
+        />
+      </div>
+      <Table>
+        <NotificationTableHeader />
+        <TableBody>
+          {isLoading ? (
+            <TableRow>
+              <TableCell colSpan={10} className="text-center">
+                Loading...
+              </TableCell>
+            </TableRow>
+          ) : !filteredLogs?.length ? (
+            <TableRow>
+              <TableCell colSpan={10} className="text-center">
+                No email logs found
+              </TableCell>
+            </TableRow>
+          ) : (
+            filteredLogs.map((log) => (
+              <NotificationTableRow key={log.id} log={log} />
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
