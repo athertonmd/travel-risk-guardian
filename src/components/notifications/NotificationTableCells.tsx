@@ -13,7 +13,7 @@ export const NotificationTableCells = ({ log }: NotificationTableCellsProps) => 
   console.log('Rendering log entry:', {
     id: log.id,
     client_id: log.client_id,
-    client: log.clients,
+    clients: log.clients,
     clientName: log.clients?.name
   });
 
