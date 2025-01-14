@@ -52,7 +52,7 @@ export const useEmailLogs = () => {
           return null;
         }
         
-        console.log('Email logs fetched:', data); // Add this line for debugging
+        console.log('Email logs with client data:', data);
         return data;
       } catch (error) {
         console.error('Error in email logs query:', error);
