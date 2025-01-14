@@ -2,32 +2,11 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { NotificationTableRow } from "./NotificationTableRow";
-
-interface EmailLog {
-  id: string;
-  sent_at: string;
-  recipient_status: string;
-  recipient_error_message?: string | null;
-  cc_status?: string | null;
-  cc_error_message?: string | null;
-  recipient: string;
-  cc?: string[];
-  country: string;
-  risk_level: string;
-  traveller_name: string | null;
-  client_id: string | null;
-  clients?: {
-    name: string;
-  } | null;
-  profiles: {
-    email: string;
-  };
-}
+import { NotificationTableHeader } from "./NotificationTableHeader";
+import type { EmailLog } from "@/types/email-logs";
 
 interface NotificationsTableProps {
   emailLogs: EmailLog[] | undefined;
@@ -37,20 +16,7 @@ interface NotificationsTableProps {
 export const NotificationsTable = ({ emailLogs, isLoading }: NotificationsTableProps) => {
   return (
     <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Date Sent</TableHead>
-          <TableHead>Recipient Status</TableHead>
-          <TableHead>CC Status</TableHead>
-          <TableHead>Recipient</TableHead>
-          <TableHead>CC</TableHead>
-          <TableHead>Traveller</TableHead>
-          <TableHead>Country</TableHead>
-          <TableHead>Risk Level</TableHead>
-          <TableHead>Client</TableHead>
-          <TableHead>Sent By</TableHead>
-        </TableRow>
-      </TableHeader>
+      <NotificationTableHeader />
       <TableBody>
         {isLoading ? (
           <TableRow>
