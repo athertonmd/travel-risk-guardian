@@ -3,38 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
-import { DashboardSearch } from "@/components/dashboard/DashboardSearch";
-import { RiskAssessmentGrid } from "@/components/dashboard/RiskAssessmentGrid";
-import { ClientSelector } from "@/components/dashboard/ClientSelector";
-import RiskMap from "@/components/dashboard/RiskMap";
+import { DashboardContent } from "@/components/dashboard/DashboardContent";
+import { useClientSelection } from "@/hooks/useClientSelection";
 import { toast } from "@/components/ui/use-toast";
-
-const STORAGE_KEY = 'lastSelectedClient';
-
-interface StoredClientData {
-  id: string;
-  name: string;
-}
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedClientId, setSelectedClientId] = useState<string | null>(() => {
-    const storedData = localStorage.getItem(STORAGE_KEY);
-    if (storedData) {
-      const parsedData = JSON.parse(storedData) as StoredClientData;
-      return parsedData.id;
-    }
-    return null;
-  });
-  const [selectedClientName, setSelectedClientName] = useState<string | null>(() => {
-    const storedData = localStorage.getItem(STORAGE_KEY);
-    if (storedData) {
-      const parsedData = JSON.parse(storedData) as StoredClientData;
-      return parsedData.name;
-    }
-    return null;
-  });
+  const { selectedClientId, selectedClientName, handleClientChange } = useClientSelection();
 
   const { data: assessments = [], isLoading, error } = useQuery({
     queryKey: ['risk-assessments', selectedClientId],
@@ -71,13 +47,6 @@ const Dashboard = () => {
 
   const handleCountryClick = (country: string) => {
     setSearchTerm(country);
-  };
-
-  const handleClientChange = (clientId: string, clientName: string) => {
-    setSelectedClientId(clientId);
-    setSelectedClientName(clientName);
-    // Store the selection in localStorage
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ id: clientId, name: clientName }));
   };
 
   const filteredAssessments = assessments.filter((assessment) => {
@@ -141,39 +110,14 @@ const Dashboard = () => {
     <div className="flex-1 w-full">
       <div className="p-6">
         <DashboardHeader selectedClientName={selectedClientName} />
-        
-        <div className="max-w-7xl mx-auto space-y-8">
-          <div className="flex flex-col sm:flex-row items-start gap-4">
-            <ClientSelector
-              selectedClientId={selectedClientId}
-              onClientChange={handleClientChange}
-            />
-            <div className="flex-1 w-full">
-              <DashboardSearch 
-                searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
-              />
-            </div>
-          </div>
-
-          {selectedClientId && (
-            <>
-              <RiskMap 
-                assessments={filteredAssessments} 
-                searchTerm={searchTerm}
-                onCountryClick={handleCountryClick}
-              />
-
-              <RiskAssessmentGrid assessments={filteredAssessments} />
-            </>
-          )}
-
-          {!selectedClientId && (
-            <div className="flex justify-center items-center min-h-[400px]">
-              <p className="text-gray-500">Please select a client to view risk assessments.</p>
-            </div>
-          )}
-        </div>
+        <DashboardContent
+          selectedClientId={selectedClientId}
+          handleClientChange={handleClientChange}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          filteredAssessments={filteredAssessments}
+          handleCountryClick={handleCountryClick}
+        />
       </div>
     </div>
   );
