@@ -120,7 +120,7 @@ const Dashboard = () => {
         <DashboardHeader selectedClientName={selectedClientName} />
         
         <div className="max-w-7xl mx-auto space-y-8">
-          <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-start gap-4">
             <ClientSelector
               selectedClientId={selectedClientId}
               onClientChange={handleClientChange}
