@@ -10,7 +10,7 @@ interface NotificationTableCellsProps {
 
 export const NotificationTableCells = ({ log }: NotificationTableCellsProps) => {
   // Add detailed logging to help debug the client name
-  console.log('Rendering log entry:', {
+  console.log('Rendering notification table cell:', {
     id: log.id,
     client_id: log.client_id,
     clients: log.clients,
