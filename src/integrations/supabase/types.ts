@@ -9,6 +9,30 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      clients: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          status: Database["public"]["Enums"]["client_status"] | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          status?: Database["public"]["Enums"]["client_status"] | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          status?: Database["public"]["Enums"]["client_status"] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_logs: {
         Row: {
           cc: string[] | null
@@ -93,6 +117,7 @@ export type Database = {
         Row: {
           amended_by: string
           assessment: Database["public"]["Enums"]["risk_level"]
+          client_id: string | null
           country: string
           created_at: string
           id: string
@@ -102,6 +127,7 @@ export type Database = {
         Insert: {
           amended_by: string
           assessment: Database["public"]["Enums"]["risk_level"]
+          client_id?: string | null
           country: string
           created_at?: string
           id?: string
@@ -111,6 +137,7 @@ export type Database = {
         Update: {
           amended_by?: string
           assessment?: Database["public"]["Enums"]["risk_level"]
+          client_id?: string | null
           country?: string
           created_at?: string
           id?: string
@@ -125,6 +152,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "risk_assessments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
@@ -135,6 +169,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      client_status: "active" | "inactive"
       email_status: "sent" | "failed" | "pending"
       risk_level: "low" | "medium" | "high" | "extreme"
       user_role: "user" | "admin"

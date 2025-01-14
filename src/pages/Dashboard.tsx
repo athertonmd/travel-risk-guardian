@@ -5,19 +5,26 @@ import { supabase } from "@/integrations/supabase/client";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardSearch } from "@/components/dashboard/DashboardSearch";
 import { RiskAssessmentGrid } from "@/components/dashboard/RiskAssessmentGrid";
+import { ClientSelector } from "@/components/dashboard/ClientSelector";
 import RiskMap from "@/components/dashboard/RiskMap";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
 
   const { data: assessments = [], isLoading } = useQuery({
-    queryKey: ['risk-assessments'],
+    queryKey: ['risk-assessments', selectedClientId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const query = supabase
         .from('risk_assessments')
         .select('*');
       
+      if (selectedClientId) {
+        query.eq('client_id', selectedClientId);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
@@ -60,10 +67,16 @@ const Dashboard = () => {
         <DashboardHeader />
         
         <div className="max-w-7xl mx-auto space-y-8">
-          <DashboardSearch 
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-          />
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <ClientSelector
+              selectedClientId={selectedClientId}
+              onClientChange={setSelectedClientId}
+            />
+            <DashboardSearch 
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+            />
+          </div>
 
           <RiskMap 
             assessments={filteredAssessments} 
