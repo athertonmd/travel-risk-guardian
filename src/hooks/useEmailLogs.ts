@@ -31,6 +31,9 @@ export const useEmailLogs = () => {
             *,
             profiles (
               email
+            ),
+            clients (
+              name
             )
           `)
           .eq('sent_by', session.user.id)

@@ -20,6 +20,10 @@ interface EmailLog {
   country: string;
   risk_level: string;
   traveller_name: string | null;
+  client_id: string | null;
+  clients?: {
+    name: string;
+  } | null;
   profiles: {
     email: string;
   };
@@ -43,19 +47,20 @@ export const NotificationsTable = ({ emailLogs, isLoading }: NotificationsTableP
           <TableHead>Traveller</TableHead>
           <TableHead>Country</TableHead>
           <TableHead>Risk Level</TableHead>
+          <TableHead>Client</TableHead>
           <TableHead>Sent By</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {isLoading ? (
           <TableRow>
-            <TableCell colSpan={9} className="text-center">
+            <TableCell colSpan={10} className="text-center">
               Loading...
             </TableCell>
           </TableRow>
         ) : !emailLogs?.length ? (
           <TableRow>
-            <TableCell colSpan={9} className="text-center">
+            <TableCell colSpan={10} className="text-center">
               No email logs found
             </TableCell>
           </TableRow>

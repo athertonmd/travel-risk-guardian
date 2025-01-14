@@ -15,9 +15,13 @@ interface EmailLog {
   country: string;
   risk_level: string;
   traveller_name: string | null;
+  client_id: string | null;
   profiles: {
     email: string;
   };
+  clients?: {
+    name: string;
+  } | null;
 }
 
 interface NotificationTableRowProps {
@@ -34,7 +38,8 @@ export const NotificationTableRow = ({ log }: NotificationTableRowProps) => {
     cc_status: log.cc_status,
     cc_error: log.cc_error_message,
     sent_at: log.sent_at,
-    traveller_name: log.traveller_name
+    traveller_name: log.traveller_name,
+    client: log.clients?.name
   });
 
   return (
@@ -67,6 +72,7 @@ export const NotificationTableRow = ({ log }: NotificationTableRowProps) => {
       <TableCell>
         <RiskLevelBadge level={log.risk_level} />
       </TableCell>
+      <TableCell>{log.clients?.name || "-"}</TableCell>
       <TableCell>{log.profiles.email}</TableCell>
     </TableRow>
   );

@@ -18,6 +18,9 @@ interface EmailLog {
   cc: string[] | null;
   country: string;
   risk_level: string;
+  clients?: {
+    name: string;
+  } | null;
   profiles: {
     email: string;
   };
@@ -66,6 +69,7 @@ export const DownloadLogsButton = ({ emailLogs }: DownloadLogsButtonProps) => {
         'CC': log.cc?.join(", ") || '-',
         'Country': log.country,
         'Risk Level': log.risk_level,
+        'Client': log.clients?.name || '-',
         'Sent By': log.profiles.email
       }));
 

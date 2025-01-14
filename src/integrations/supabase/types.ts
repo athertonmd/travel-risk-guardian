@@ -38,6 +38,7 @@ export type Database = {
           cc: string[] | null
           cc_error_message: string | null
           cc_status: Database["public"]["Enums"]["email_status"] | null
+          client_id: string | null
           country: string
           id: string
           recipient: string
@@ -53,6 +54,7 @@ export type Database = {
           cc?: string[] | null
           cc_error_message?: string | null
           cc_status?: Database["public"]["Enums"]["email_status"] | null
+          client_id?: string | null
           country: string
           id?: string
           recipient: string
@@ -68,6 +70,7 @@ export type Database = {
           cc?: string[] | null
           cc_error_message?: string | null
           cc_status?: Database["public"]["Enums"]["email_status"] | null
+          client_id?: string | null
           country?: string
           id?: string
           recipient?: string
@@ -80,6 +83,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "email_logs_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "email_logs_sent_by_fkey"
             columns: ["sent_by"]
