@@ -34,7 +34,7 @@ export const useEmailLogs = () => {
             profiles:sent_by (
               email
             ),
-            clients (
+            clients!email_logs_client_id_fkey (
               id,
               name
             )
