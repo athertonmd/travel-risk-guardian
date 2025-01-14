@@ -9,6 +9,7 @@ interface EmailFormData {
   cc: string;
   requireApproval: boolean;
   travellerName: string;
+  recordLocator: string;
 }
 
 interface EmailRiskAssessmentFormProps {
@@ -29,6 +30,15 @@ export const EmailRiskAssessmentForm = ({ form, isSubmitting, onSubmit }: EmailR
           type="text"
           placeholder="Enter traveller's name"
           {...register("travellerName", { required: true })}
+        />
+      </div>
+      <div>
+        <Label htmlFor="recordLocator">Record Locator</Label>
+        <Input
+          id="recordLocator"
+          type="text"
+          placeholder="Enter record locator"
+          {...register("recordLocator")}
         />
       </div>
       <div>

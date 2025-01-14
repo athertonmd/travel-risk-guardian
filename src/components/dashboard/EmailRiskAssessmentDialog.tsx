@@ -25,6 +25,7 @@ interface EmailFormData {
   cc: string;
   requireApproval: boolean;
   travellerName: string;
+  recordLocator: string;
 }
 
 export const EmailRiskAssessmentDialog = ({ country, assessment, information }: EmailDialogProps) => {
@@ -34,6 +35,7 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information }: 
     defaultValues: {
       requireApproval: false,
       travellerName: "",
+      recordLocator: "",
     }
   });
 
@@ -63,7 +65,8 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information }: 
         risk_level: assessment,
         information,
         user_id: user.id,
-        travellerName: data.travellerName
+        travellerName: data.travellerName,
+        recordLocator: data.recordLocator
       });
 
       const { error, data: response } = await supabase.functions.invoke('send-risk-assessment', {
@@ -74,7 +77,8 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information }: 
           risk_level: assessment,
           information,
           user_id: user.id,
-          travellerName: data.travellerName // Ensure traveller name is passed
+          travellerName: data.travellerName,
+          recordLocator: data.recordLocator
         },
       });
 

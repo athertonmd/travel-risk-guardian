@@ -13,12 +13,17 @@ const getRiskColor = (risk: string): string => {
   }
 };
 
-export const generateEmailHtml = (country: string, risk_level: string, information: string): string => {
+export const generateEmailHtml = (country: string, risk_level: string, information: string, isCC = false, travellerName?: string, recordLocator?: string): string => {
+  const travellerInfo = travellerName ? `<p style="margin: 5px 0 0; color: #666;">Traveller: <strong>${travellerName}</strong></p>` : '';
+  const recordLocatorInfo = recordLocator ? `<p style="margin: 5px 0 0; color: #666;">Record Locator: <strong>${recordLocator}</strong></p>` : '';
+
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <h2 style="color: #333;">Risk Assessment Report</h2>
       <div style="margin: 20px 0;">
         <h3 style="color: #555;">Country: ${country}</h3>
+        ${travellerInfo}
+        ${recordLocatorInfo}
         <p style="background-color: ${getRiskColor(risk_level)}; color: white; padding: 10px; border-radius: 5px; display: inline-block;">
           Risk Level: ${risk_level.toUpperCase()}
         </p>
