@@ -33,6 +33,7 @@ export interface EmailData {
   risk_level: string;
   information: string;
   recordLocator?: string | null;
+  client_id?: string | null;
 }
 
 export interface EmailLogEntry {
@@ -46,4 +47,5 @@ export interface EmailLogEntry {
   cc_status?: 'pending' | 'sent' | 'failed' | null;
   sent_at: string;
   traveller_name: string | null;
+  client_id?: string | null;
 }
