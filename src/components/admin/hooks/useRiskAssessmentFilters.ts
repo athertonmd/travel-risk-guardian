@@ -7,6 +7,7 @@ interface RiskAssessment {
   information: string;
   created_at: string;
   updated_at: string;
+  client_id: string | null;
   profiles?: {
     email: string;
   };
@@ -14,20 +15,27 @@ interface RiskAssessment {
 
 export const useRiskAssessmentFilters = (assessments: RiskAssessment[] | undefined) => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
 
   const filteredAssessments = useMemo(() => {
     const searchLower = searchTerm.toLowerCase();
     return assessments?.filter((assessment) => {
-      return (
+      const matchesSearch = 
         assessment.country.toLowerCase().includes(searchLower) ||
-        assessment.assessment.toLowerCase().includes(searchLower)
-      );
+        assessment.assessment.toLowerCase().includes(searchLower);
+      
+      const matchesClient = 
+        !selectedClientId || assessment.client_id === selectedClientId;
+
+      return matchesSearch && matchesClient;
     });
-  }, [assessments, searchTerm]);
+  }, [assessments, searchTerm, selectedClientId]);
 
   return {
     searchTerm,
     setSearchTerm,
+    selectedClientId,
+    setSelectedClientId,
     filteredAssessments,
   };
 };

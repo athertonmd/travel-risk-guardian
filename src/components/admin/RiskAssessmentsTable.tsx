@@ -42,6 +42,8 @@ export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessments
   const { 
     searchTerm, 
     setSearchTerm, 
+    selectedClientId,
+    setSelectedClientId,
     filteredAssessments 
   } = useRiskAssessmentFilters(assessments);
 
@@ -80,6 +82,10 @@ export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessments
     setEditDialogOpen(true);
   };
 
+  const handleClientChange = (clientId: string) => {
+    setSelectedClientId(clientId);
+  };
+
   return (
     <>
       <RiskAssessmentActions />
@@ -87,6 +93,8 @@ export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessments
       <RiskAssessmentSearch
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        selectedClientId={selectedClientId}
+        onClientChange={handleClientChange}
       />
 
       <div className="rounded-md border">
