@@ -13,19 +13,22 @@ interface RiskAssessment {
   };
 }
 
-export const useRiskAssessmentFilters = (assessments: RiskAssessment[] | undefined) => {
+export const useRiskAssessmentFilters = (
+  assessments: RiskAssessment[] | undefined,
+  selectedClientId: string | null
+) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
 
   const filteredAssessments = useMemo(() => {
+    if (!selectedClientId) return [];
+    
     const searchLower = searchTerm.toLowerCase();
     return assessments?.filter((assessment) => {
       const matchesSearch = 
         assessment.country.toLowerCase().includes(searchLower) ||
         assessment.assessment.toLowerCase().includes(searchLower);
       
-      const matchesClient = 
-        !selectedClientId || assessment.client_id === selectedClientId;
+      const matchesClient = assessment.client_id === selectedClientId;
 
       return matchesSearch && matchesClient;
     });
@@ -34,8 +37,6 @@ export const useRiskAssessmentFilters = (assessments: RiskAssessment[] | undefin
   return {
     searchTerm,
     setSearchTerm,
-    selectedClientId,
-    setSelectedClientId,
     filteredAssessments,
   };
 };

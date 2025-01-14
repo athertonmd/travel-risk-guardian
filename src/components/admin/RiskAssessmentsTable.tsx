@@ -5,6 +5,7 @@ import { EditRiskAssessmentDialog } from "./EditRiskAssessmentDialog";
 import { RiskAssessmentsTableContent } from "./RiskAssessmentsTableContent";
 import { useRiskAssessmentFilters } from "./hooks/useRiskAssessmentFilters";
 import { useRiskAssessmentActions } from "./hooks/useRiskAssessmentActions";
+import { useClientSelection } from "@/hooks/useClientSelection";
 
 interface RiskAssessment {
   id: string;
@@ -26,12 +27,16 @@ interface RiskAssessmentsTableProps {
 
 export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessmentsTableProps) => {
   const { 
+    selectedClientId,
+    selectedClientName,
+    handleClientChange,
+  } = useClientSelection();
+
+  const { 
     searchTerm, 
     setSearchTerm, 
-    selectedClientId,
-    setSelectedClientId,
     filteredAssessments 
-  } = useRiskAssessmentFilters(assessments);
+  } = useRiskAssessmentFilters(assessments, selectedClientId);
 
   const {
     deleteDialogOpen,
@@ -44,10 +49,6 @@ export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessments
     handleEdit,
   } = useRiskAssessmentActions();
 
-  const handleClientChange = (clientId: string) => {
-    setSelectedClientId(clientId);
-  };
-
   return (
     <>
       <RiskAssessmentActions />
@@ -59,12 +60,18 @@ export const RiskAssessmentsTable = ({ assessments, isLoading }: RiskAssessments
         onClientChange={handleClientChange}
       />
 
-      <RiskAssessmentsTableContent
-        assessments={filteredAssessments}
-        isLoading={isLoading}
-        onDelete={confirmDelete}
-        onEdit={handleEdit}
-      />
+      {selectedClientId ? (
+        <RiskAssessmentsTableContent
+          assessments={filteredAssessments}
+          isLoading={isLoading}
+          onDelete={confirmDelete}
+          onEdit={handleEdit}
+        />
+      ) : (
+        <div className="flex justify-center items-center min-h-[400px] border rounded-md">
+          <p className="text-gray-500">Please select a client to view risk assessments.</p>
+        </div>
+      )}
 
       <DeleteConfirmationDialog
         isOpen={deleteDialogOpen}
