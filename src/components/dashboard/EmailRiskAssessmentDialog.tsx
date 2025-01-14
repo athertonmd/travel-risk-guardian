@@ -49,6 +49,16 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information, cl
 
       if (!user) throw new Error('User not authenticated');
 
+      console.log('Client ID being sent in payload:', clientId); // Added logging
+      console.log('Email submission data:', {
+        to: data.email,
+        cc: data.cc,
+        country,
+        risk_level: assessment,
+        client_id: clientId,
+        traveller_name: data.travellerName
+      });
+
       const ccEmails = data.cc ? data.cc.split(',').map(email => email.trim()) : [];
       
       if (data.requireApproval) {
@@ -60,18 +70,6 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information, cl
         return;
       }
 
-      console.log('Sending email with data:', {
-        to: data.email,
-        cc: ccEmails,
-        country,
-        risk_level: assessment,
-        information,
-        user_id: user.id,
-        travellerName: data.travellerName,
-        recordLocator: data.recordLocator,
-        client_id: clientId
-      });
-
       const { error, data: response } = await supabase.functions.invoke('send-risk-assessment', {
         body: {
           to: data.email,
@@ -82,7 +80,7 @@ export const EmailRiskAssessmentDialog = ({ country, assessment, information, cl
           user_id: user.id,
           travellerName: data.travellerName,
           recordLocator: data.recordLocator,
-          client_id: clientId
+          client_id: clientId // Ensure client_id is included in payload
         },
       });
 
