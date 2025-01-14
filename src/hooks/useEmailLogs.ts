@@ -55,7 +55,13 @@ export const useEmailLogs = () => {
           return null;
         }
         
-        console.log('Email logs fetched successfully:', data);
+        // Add detailed logging of the fetched data
+        console.log('Email logs fetched successfully:', {
+          count: data?.length,
+          sampleLog: data?.[0],
+          clientInfo: data?.[0]?.clients
+        });
+        
         return data;
       } catch (error) {
         console.error('Error in email logs query:', error);
