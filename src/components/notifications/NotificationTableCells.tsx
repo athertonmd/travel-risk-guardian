@@ -40,7 +40,7 @@ export const NotificationTableCells = ({ log }: NotificationTableCellsProps) => 
         <RiskLevelBadge level={log.risk_level} />
       </TableCell>
       <TableCell>
-        {log.clients?.name || (log.client_id ? "Loading..." : "-")}
+        {log.clients?.name || "-"}
       </TableCell>
       <TableCell>{log.profiles.email}</TableCell>
     </>

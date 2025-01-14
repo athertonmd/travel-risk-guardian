@@ -33,7 +33,6 @@ export const useEmailLogs = () => {
               email
             ),
             clients (
-              id,
               name
             )
           `)
@@ -53,6 +52,7 @@ export const useEmailLogs = () => {
           return null;
         }
         
+        console.log('Email logs fetched:', data); // Add this line for debugging
         return data;
       } catch (error) {
         console.error('Error in email logs query:', error);
