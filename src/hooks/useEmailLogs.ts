@@ -25,6 +25,8 @@ export const useEmailLogs = () => {
           return null;
         }
 
+        console.log('Fetching email logs for user:', session.user.id);
+
         const { data, error } = await supabase
           .from('email_logs')
           .select(`
@@ -32,7 +34,7 @@ export const useEmailLogs = () => {
             profiles:sent_by (
               email
             ),
-            clients!inner (
+            clients (
               name
             )
           `)
@@ -52,7 +54,7 @@ export const useEmailLogs = () => {
           return null;
         }
         
-        console.log('Email logs with client data:', data);
+        console.log('Email logs fetched successfully:', data);
         return data;
       } catch (error) {
         console.error('Error in email logs query:', error);
