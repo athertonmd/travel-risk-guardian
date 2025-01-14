@@ -70,16 +70,18 @@ function AppContent() {
   }, [navigate, isAuthPage]);
 
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full">
         {!isAuthPage && <AppSidebar />}
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/admin/risk-assessments" element={<Admin />} />
-          <Route path="/admin/notifications" element={<RiskNotificationLog />} />
-        </Routes>
+        <div className={`flex-1 ${!isAuthPage ? 'sidebar-content-wrapper' : ''}`}>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/admin/risk-assessments" element={<Admin />} />
+            <Route path="/admin/notifications" element={<RiskNotificationLog />} />
+          </Routes>
+        </div>
       </div>
       <Toaster />
     </SidebarProvider>
