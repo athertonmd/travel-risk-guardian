@@ -9,11 +9,32 @@ import { ClientSelector } from "@/components/dashboard/ClientSelector";
 import RiskMap from "@/components/dashboard/RiskMap";
 import { toast } from "@/components/ui/use-toast";
 
+const STORAGE_KEY = 'lastSelectedClient';
+
+interface StoredClientData {
+  id: string;
+  name: string;
+}
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
-  const [selectedClientName, setSelectedClientName] = useState<string | null>(null);
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(() => {
+    const storedData = localStorage.getItem(STORAGE_KEY);
+    if (storedData) {
+      const parsedData = JSON.parse(storedData) as StoredClientData;
+      return parsedData.id;
+    }
+    return null;
+  });
+  const [selectedClientName, setSelectedClientName] = useState<string | null>(() => {
+    const storedData = localStorage.getItem(STORAGE_KEY);
+    if (storedData) {
+      const parsedData = JSON.parse(storedData) as StoredClientData;
+      return parsedData.name;
+    }
+    return null;
+  });
 
   const { data: assessments = [], isLoading, error } = useQuery({
     queryKey: ['risk-assessments', selectedClientId],
@@ -55,6 +76,8 @@ const Dashboard = () => {
   const handleClientChange = (clientId: string, clientName: string) => {
     setSelectedClientId(clientId);
     setSelectedClientName(clientName);
+    // Store the selection in localStorage
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ id: clientId, name: clientName }));
   };
 
   const filteredAssessments = assessments.filter((assessment) => {
