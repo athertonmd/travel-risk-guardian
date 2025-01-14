@@ -1,4 +1,3 @@
-import { ClientSelector } from "./ClientSelector";
 import { DashboardSearch } from "./DashboardSearch";
 import RiskMap from "./RiskMap";
 import { RiskAssessmentGrid } from "./RiskAssessmentGrid";
@@ -23,10 +22,6 @@ export const DashboardContent = ({
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       <div className="flex flex-col sm:flex-row items-start gap-4">
-        <ClientSelector
-          selectedClientId={selectedClientId}
-          onClientChange={handleClientChange}
-        />
         <div className="flex-1 w-full">
           <DashboardSearch 
             searchTerm={searchTerm}
