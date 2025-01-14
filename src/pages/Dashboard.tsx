@@ -20,7 +20,8 @@ const Dashboard = () => {
       try {
         let query = supabase
           .from('risk_assessments')
-          .select('*');
+          .select('*')
+          .order('country');
         
         if (selectedClientId) {
           query = query.eq('client_id', selectedClientId);
@@ -32,8 +33,19 @@ const Dashboard = () => {
           console.error('Supabase query error:', supabaseError);
           throw supabaseError;
         }
+
+        // If no data is returned for a specific client, fetch all risk assessments
+        if (!data || data.length === 0) {
+          const { data: allData, error: allDataError } = await supabase
+            .from('risk_assessments')
+            .select('*')
+            .order('country');
+          
+          if (allDataError) throw allDataError;
+          return allData || [];
+        }
         
-        return data || [];
+        return data;
       } catch (err) {
         console.error('Error fetching risk assessments:', err);
         toast({
