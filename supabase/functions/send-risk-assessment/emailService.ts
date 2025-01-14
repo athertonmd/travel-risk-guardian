@@ -2,6 +2,7 @@ import { EmailPayload, EmailResult } from './types.ts';
 
 export class EmailService {
   private readonly apiKey: string;
+  private readonly apiEndpoint = 'https://api.resend.com/emails';
 
   constructor(apiKey: string) {
     this.apiKey = apiKey;
@@ -9,10 +10,16 @@ export class EmailService {
 
   async sendEmail(payload: EmailPayload): Promise<EmailResult> {
     const startTime = Date.now();
-    console.log('Sending email with payload:', payload);
+    console.log('Starting email send process with Resend API');
 
     try {
-      const res = await fetch('https://api.resend.com/emails', {
+      console.log('Sending request to Resend API:', {
+        endpoint: this.apiEndpoint,
+        to: payload.to,
+        subject: payload.subject ? payload.subject.substring(0, 30) + '...' : 'No subject'
+      });
+
+      const res = await fetch(this.apiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -23,15 +30,24 @@ export class EmailService {
 
       const responseData = await res.json();
       const endTime = Date.now();
-      console.log(`Email sent in ${endTime - startTime}ms. Response:`, responseData);
+      console.log(`Email API request completed in ${endTime - startTime}ms`);
 
       if (!res.ok) {
-        console.error('Resend API error response:', responseData);
+        console.error('Resend API error:', {
+          status: res.status,
+          statusText: res.statusText,
+          response: responseData
+        });
         return {
           success: false,
           error: responseData.message || 'Failed to send email'
         };
       }
+
+      console.log('Email sent successfully:', {
+        id: responseData.id,
+        to: payload.to
+      });
 
       return {
         success: true,
@@ -39,7 +55,7 @@ export class EmailService {
       };
     } catch (error) {
       const endTime = Date.now();
-      console.error(`Error sending email after ${endTime - startTime}ms:`, error);
+      console.error(`Error in email service after ${endTime - startTime}ms:`, error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error occurred'
