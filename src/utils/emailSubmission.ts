@@ -18,14 +18,13 @@ export const handleEmailSubmission = async (
   clientId: string | undefined,
   user: User | null
 ): Promise<boolean> => {
-  // Verify active session first
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  const { data: { session } } = await supabase.auth.getSession();
   
-  if (sessionError || !session) {
-    console.error('Session error:', sessionError);
+  if (!session) {
+    console.error('No active session found');
     toast({
-      title: "Authentication Required",
-      description: "Please sign in to send emails",
+      title: "Session Expired",
+      description: "Please sign in again to continue",
       variant: "destructive",
     });
     return false;
@@ -34,7 +33,7 @@ export const handleEmailSubmission = async (
   if (!user) {
     toast({
       title: "Authentication Required",
-      description: "You must be logged in to send emails",
+      description: "Please sign in to send emails",
       variant: "destructive",
     });
     return false;
