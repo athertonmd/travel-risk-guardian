@@ -45,11 +45,13 @@ export const EmailRiskAssessmentDialog = ({
     },
   });
 
+  // Check session when component mounts and when dialog opens
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
       if (error || !session) {
         console.error('Session check error:', error);
+        onOpenChange(false); // Close dialog if not authenticated
         toast({
           title: "Authentication Required",
           description: "Please sign in to continue",
@@ -59,8 +61,10 @@ export const EmailRiskAssessmentDialog = ({
       }
     };
 
-    checkSession();
-  }, [navigate]);
+    if (open) {
+      checkSession();
+    }
+  }, [open, navigate, onOpenChange]);
 
   useEffect(() => {
     if (!open) {
@@ -69,7 +73,10 @@ export const EmailRiskAssessmentDialog = ({
   }, [open, form]);
 
   const onSubmit = async (data: EmailFormData) => {
-    if (!user) {
+    // Double check authentication before submission
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session || !user) {
+      onOpenChange(false); // Close dialog
       toast({
         title: "Authentication Required",
         description: "Please sign in to send emails",

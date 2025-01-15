@@ -5,9 +5,9 @@ import { User } from "@supabase/supabase-js";
 interface EmailSubmissionData {
   email: string;
   cc?: string;
+  requireApproval?: boolean;
   travellerName?: string;
   recordLocator?: string;
-  requireApproval?: boolean;
 }
 
 export const handleEmailSubmission = async (
@@ -18,13 +18,13 @@ export const handleEmailSubmission = async (
   clientId: string | undefined,
   user: User | null
 ): Promise<boolean> => {
-  // Check for active session first
+  // Verify active session first
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
   
   if (sessionError || !session) {
     console.error('Session error:', sessionError);
     toast({
-      title: "Authentication Error",
+      title: "Authentication Required",
       description: "Please sign in to send emails",
       variant: "destructive",
     });
@@ -33,7 +33,7 @@ export const handleEmailSubmission = async (
 
   if (!user) {
     toast({
-      title: "Authentication Error",
+      title: "Authentication Required",
       description: "You must be logged in to send emails",
       variant: "destructive",
     });
