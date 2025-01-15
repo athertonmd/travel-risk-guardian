@@ -34,16 +34,15 @@ export const ClientSelector = ({
     },
   });
 
-  const handleChange = (clientId: string) => {
-    if (clientId === 'all') {
+  const handleChange = (value: string) => {
+    if (value === 'clear' && showClearOption) {
       onClientChange('');
-    } else if (clientId === 'clear' && showClearOption) {
-      onClientChange(selectedClientId!);
-    } else {
-      const selectedClient = clients?.find(client => client.id === clientId);
-      if (selectedClient) {
-        onClientChange(clientId, selectedClient.name);
-      }
+      return;
+    }
+
+    const selectedClient = clients?.find(client => client.id === value);
+    if (selectedClient) {
+      onClientChange(value, selectedClient.name);
     }
   };
 
@@ -59,7 +58,6 @@ export const ClientSelector = ({
           <SelectValue placeholder="Select a client" />
         </SelectTrigger>
         <SelectContent>
-          {showAllOption && <SelectItem value="all">All Clients</SelectItem>}
           {showClearOption && selectedClientId && (
             <SelectItem value="clear">Clear filter</SelectItem>
           )}
