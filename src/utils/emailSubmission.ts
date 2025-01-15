@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
+import { User } from "@supabase/supabase-js";
 
 interface EmailSubmissionData {
   email: string;
@@ -9,26 +10,27 @@ interface EmailSubmissionData {
   requireApproval?: boolean;
 }
 
-interface EmailPayload {
-  to: string;
-  cc?: string[];
-  country: string;
-  risk_level: string;
-  information: string;
-  user_id: string;
-  travellerName?: string;
-  recordLocator?: string;
-  client_id?: string;
-}
-
 export const handleEmailSubmission = async (
   data: EmailSubmissionData,
   country: string,
   assessment: string,
   information: string,
   clientId: string | undefined,
-  user: { id: string } | null
+  user: User | null
 ): Promise<boolean> => {
+  // Check for active session first
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  
+  if (sessionError || !session) {
+    console.error('Session error:', sessionError);
+    toast({
+      title: "Authentication Error",
+      description: "Please sign in to send emails",
+      variant: "destructive",
+    });
+    return false;
+  }
+
   if (!user) {
     toast({
       title: "Authentication Error",
@@ -49,7 +51,7 @@ export const handleEmailSubmission = async (
     return false;
   }
 
-  const payload: EmailPayload = {
+  const payload = {
     to: data.email,
     cc: ccEmails,
     country,
