@@ -69,13 +69,19 @@ export const EmailRiskAssessmentDialog = ({
         navigate('/auth');
         return false;
       }
+
+      // Wait a moment for the user object to be populated
+      if (!user) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+
       return true;
     };
 
     if (open) {
       checkSession();
     }
-  }, [open, navigate, onOpenChange]);
+  }, [open, navigate, onOpenChange, user]);
 
   useEffect(() => {
     if (!open) {
@@ -90,31 +96,23 @@ export const EmailRiskAssessmentDialog = ({
       clientId
     });
 
+    // Get the current session and user
     const { data: { session } } = await supabase.auth.getSession();
-    console.log('Session check before submission:', {
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+
+    console.log('Session and user check before submission:', {
       hasSession: !!session,
       userId: session?.user?.id,
-      userEmail: session?.user?.email
+      userEmail: session?.user?.email,
+      currentUser
     });
     
-    if (!session) {
-      console.error('No active session found during submission');
+    if (!session || !currentUser) {
+      console.error('No active session or user found during submission');
       onOpenChange(false);
       toast({
         title: "Session Expired",
         description: "Please sign in again to continue",
-        variant: "destructive",
-      });
-      navigate('/auth');
-      return;
-    }
-
-    if (!user) {
-      console.error('No user object found during submission');
-      onOpenChange(false);
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to send emails",
         variant: "destructive",
       });
       navigate('/auth');
@@ -127,7 +125,7 @@ export const EmailRiskAssessmentDialog = ({
       assessment,
       information,
       clientId,
-      user
+      currentUser
     );
 
     if (success) {
