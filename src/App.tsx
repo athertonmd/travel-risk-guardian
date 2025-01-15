@@ -44,6 +44,9 @@ function AppContent() {
           }
         } else if (!session && !isAuthPage) {
           navigate('/auth');
+        } else if (session && isAuthPage) {
+          // If user is authenticated and on auth page, redirect to dashboard
+          navigate('/dashboard');
         }
       } catch (error) {
         console.error("Auth check error:", error);
@@ -55,11 +58,22 @@ function AppContent() {
 
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT' || !session) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state change:", event, session?.user?.email);
+      
+      if (event === 'SIGNED_IN' && session) {
+        if (isAuthPage) {
+          navigate('/dashboard');
+        }
+      } else if (event === 'SIGNED_OUT' || !session) {
         queryClient.clear();
         if (!isAuthPage) {
           navigate('/auth');
+        }
+      } else if (event === 'TOKEN_REFRESHED' && session) {
+        // Session was refreshed, ensure we're on the right page
+        if (isAuthPage) {
+          navigate('/dashboard');
         }
       }
     });
