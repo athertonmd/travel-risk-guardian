@@ -18,10 +18,24 @@ export const handleEmailSubmission = async (
   clientId: string | undefined,
   user: User | null
 ): Promise<boolean> => {
+  console.log('Starting handleEmailSubmission with:', {
+    data,
+    country,
+    assessment,
+    clientId,
+    userId: user?.id,
+    userEmail: user?.email
+  });
+
   const { data: { session } } = await supabase.auth.getSession();
+  console.log('Session check in handleEmailSubmission:', {
+    hasSession: !!session,
+    userId: session?.user?.id,
+    userEmail: session?.user?.email
+  });
   
   if (!session) {
-    console.error('No active session found');
+    console.error('No active session found in handleEmailSubmission');
     toast({
       title: "Session Expired",
       description: "Please sign in again to continue",
@@ -31,6 +45,7 @@ export const handleEmailSubmission = async (
   }
 
   if (!user) {
+    console.error('No user object found in handleEmailSubmission');
     toast({
       title: "Authentication Required",
       description: "Please sign in to send emails",
@@ -62,7 +77,7 @@ export const handleEmailSubmission = async (
     client_id: clientId
   };
 
-  console.log('Email submission data:', payload);
+  console.log('Email submission payload:', payload);
 
   try {
     const { error, data: response } = await supabase.functions.invoke('send-risk-assessment', {
@@ -79,6 +94,7 @@ export const handleEmailSubmission = async (
       return false;
     }
 
+    console.log('Email sent successfully:', response);
     toast({
       title: "Success",
       description: "Email sent successfully",

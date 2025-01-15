@@ -48,9 +48,18 @@ export const EmailRiskAssessmentDialog = ({
   // Check session when dialog opens
   useEffect(() => {
     const checkSession = async () => {
+      console.log('Checking session in EmailRiskAssessmentDialog...');
       const { data: { session }, error } = await supabase.auth.getSession();
+      
+      console.log('Session check result:', {
+        hasSession: !!session,
+        sessionError: error,
+        userId: session?.user?.id,
+        userEmail: session?.user?.email
+      });
+
       if (!session || error) {
-        console.error('Session check error:', error);
+        console.error('Session check failed:', { error, session });
         onOpenChange(false);
         toast({
           title: "Session Expired",
@@ -75,9 +84,21 @@ export const EmailRiskAssessmentDialog = ({
   }, [open, form]);
 
   const onSubmit = async (data: EmailFormData) => {
+    console.log('Starting email submission...', {
+      currentUser: user,
+      formData: data,
+      clientId
+    });
+
     const { data: { session } } = await supabase.auth.getSession();
+    console.log('Session check before submission:', {
+      hasSession: !!session,
+      userId: session?.user?.id,
+      userEmail: session?.user?.email
+    });
     
     if (!session) {
+      console.error('No active session found during submission');
       onOpenChange(false);
       toast({
         title: "Session Expired",
@@ -89,6 +110,7 @@ export const EmailRiskAssessmentDialog = ({
     }
 
     if (!user) {
+      console.error('No user object found during submission');
       onOpenChange(false);
       toast({
         title: "Authentication Required",
