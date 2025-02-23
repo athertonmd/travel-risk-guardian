@@ -4,6 +4,8 @@ import { EmailLogger } from "./emailLogger.ts";
 import { SENDER_EMAIL, REPLY_TO_EMAIL, corsHeaders } from "./config.ts";
 import { generateEmailHtml } from "./emailTemplate.ts";
 import { EmailData, EmailResults } from "./types.ts";
+import { renderAsync } from '@react-email/components';
+import RiskAssessmentEmail from './RiskAssessmentEmail.tsx';
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!;
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
@@ -85,23 +87,32 @@ serve(async (req) => {
       user_id: requestData.user_id || 'not provided'
     });
 
-    const emailData: EmailData = {
-      to: [requestData.to, ...(requestData.cc || [])],
-      subject: `Risk Assessment - ${requestData.country}`,
-      html: generateEmailHtml(
-        requestData.country,
-        requestData.risk_level,
-        requestData.information,
-        false,
-        requestData.travellerName,
-        requestData.recordLocator
-      ),
-      country: requestData.country,
-      travellerName: requestData.travellerName,
-      risk_level: requestData.risk_level,
-      information: requestData.information,
-      recordLocator: requestData.recordLocator
-    };
+    // Render primary recipient email
+    const primaryHtml = await renderAsync(
+      React.createElement(RiskAssessmentEmail, {
+        country: requestData.country,
+        risk_level: requestData.risk_level,
+        information: requestData.information,
+        travellerName: requestData.travellerName,
+        recordLocator: requestData.recordLocator,
+        isCC: false
+      })
+    );
+
+    // Render CC recipient email if needed
+    let ccHtml;
+    if (requestData.cc?.length > 0) {
+      ccHtml = await renderAsync(
+        React.createElement(RiskAssessmentEmail, {
+          country: requestData.country,
+          risk_level: requestData.risk_level,
+          information: requestData.information,
+          travellerName: requestData.travellerName,
+          recordLocator: requestData.recordLocator,
+          isCC: true
+        })
+      );
+    }
 
     console.log('Creating email log with data:', {
       recipient: requestData.to,
@@ -127,27 +138,38 @@ serve(async (req) => {
         traveller_name: requestData.travellerName || null,
         client_id: requestData.client_id || null
       }),
-      sendEmails(
-        emailData,
-        requestData.to,
-        requestData.cc || []
-      )
+      emailService.sendEmail({
+        from: SENDER_EMAIL,
+        to: [requestData.to],
+        subject: `Risk Assessment - ${requestData.country}`,
+        html: primaryHtml,
+        reply_to: REPLY_TO_EMAIL
+      })
     ]);
 
-    console.log('Email log created:', logEntry);
-    console.log('Email results:', emailResults);
+    // Send CC emails if needed
+    let ccResults = null;
+    if (requestData.cc?.length > 0 && ccHtml) {
+      ccResults = await emailService.sendEmail({
+        from: SENDER_EMAIL,
+        to: requestData.cc,
+        subject: `Risk Assessment - ${requestData.country} (CC)`,
+        html: ccHtml,
+        reply_to: REPLY_TO_EMAIL
+      });
+    }
 
     // Update log with results
     await emailLogger.updateLog(logEntry.id, {
-      recipient_status: emailResults.primary.success ? 'sent' : 'failed',
-      recipient_error_message: emailResults.primary.success ? null : JSON.stringify(emailResults.primary.error),
-      cc_status: emailResults.cc ? (emailResults.cc.success ? 'sent' : 'failed') : null,
-      cc_error_message: emailResults.cc?.error ? JSON.stringify(emailResults.cc.error) : null,
+      recipient_status: emailResults.success ? 'sent' : 'failed',
+      recipient_error_message: emailResults.success ? null : JSON.stringify(emailResults.error),
+      cc_status: ccResults ? (ccResults.success ? 'sent' : 'failed') : null,
+      cc_error_message: ccResults?.error ? JSON.stringify(ccResults.error) : null,
     });
 
-    return new Response(JSON.stringify(emailResults.primary.data), {
+    return new Response(JSON.stringify(emailResults), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: emailResults.primary.success ? 200 : 500,
+      status: emailResults.success ? 200 : 500,
     });
 
   } catch (error: any) {

@@ -1,3 +1,4 @@
+
 const getRiskColor = (risk: string): string => {
   switch (risk.toLowerCase()) {
     case 'extreme':
