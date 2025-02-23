@@ -1,48 +1,63 @@
-import { EmailPayload, EmailResult } from './types.ts';
+
+import { Resend } from 'npm:resend@2.0.0';
+
+export interface EmailResult {
+  success: boolean;
+  error?: any;
+}
 
 export class EmailService {
-  private readonly apiKey: string;
+  private resend: Resend;
 
   constructor(apiKey: string) {
-    this.apiKey = apiKey;
+    this.resend = new Resend(apiKey);
   }
 
-  async sendEmail(payload: EmailPayload): Promise<EmailResult> {
-    const startTime = Date.now();
-    console.log('Sending email with payload:', payload);
-
+  async sendEmail({
+    from,
+    to,
+    subject,
+    html,
+    reply_to
+  }: {
+    from: string;
+    to: string[];
+    subject: string;
+    html: string;
+    reply_to?: string;
+  }): Promise<EmailResult> {
     try {
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify(payload),
+      console.log('Attempting to send email:', {
+        to,
+        subject,
+        replyTo: reply_to
       });
 
-      const responseData = await res.json();
-      const endTime = Date.now();
-      console.log(`Email sent in ${endTime - startTime}ms. Response:`, responseData);
+      const { data, error } = await this.resend.emails.send({
+        from,
+        to,
+        subject,
+        html,
+        reply_to
+      });
 
-      if (!res.ok) {
-        console.error('Resend API error response:', responseData);
+      if (error) {
+        console.error('Resend API error:', error);
         return {
           success: false,
-          error: responseData.message || 'Failed to send email'
+          error
         };
       }
 
+      console.log('Email sent successfully:', data);
       return {
-        success: true,
-        data: responseData
+        success: true
       };
     } catch (error) {
-      const endTime = Date.now();
-      console.error(`Error sending email after ${endTime - startTime}ms:`, error);
+      console.error('Error sending email:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
+        error
       };
     }
   }

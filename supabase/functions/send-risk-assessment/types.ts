@@ -1,51 +1,20 @@
-export interface EmailPayload {
-  from: string;
-  to: string[];
-  subject: string;
-  html: string;
-  reply_to: string;
-}
 
-export interface EmailResult {
-  success: boolean;
-  data?: any;
-  error?: any;
+export interface EmailData {
+  subject: string;
+  country: string;
+  risk_level: string;
+  information: string;
+  travellerName?: string;
+  recordLocator?: string;
 }
 
 export interface EmailResults {
-  primary: EmailResult;
-  cc?: EmailResult;
-}
-
-export interface EmailLogUpdate {
-  recipient_status: 'sent' | 'failed';
-  recipient_error_message: string | null;
-  cc_status: 'sent' | 'failed' | null;
-  cc_error_message: string | null;
-}
-
-export interface EmailData {
-  to: string[];
-  subject: string;
-  html: string;
-  country: string;
-  travellerName?: string | null;
-  risk_level: string;
-  information: string;
-  recordLocator?: string | null;
-  client_id?: string | null;
-}
-
-export interface EmailLogEntry {
-  id: string;
-  recipient: string;
-  cc: string[] | null;
-  country: string;
-  risk_level: string;
-  sent_by: string;
-  recipient_status: 'pending' | 'sent' | 'failed';
-  cc_status?: 'pending' | 'sent' | 'failed' | null;
-  sent_at: string;
-  traveller_name: string | null;
-  client_id?: string | null;
+  primary: {
+    success: boolean;
+    error?: any;
+  };
+  cc: {
+    success: boolean;
+    error?: any;
+  } | null;
 }

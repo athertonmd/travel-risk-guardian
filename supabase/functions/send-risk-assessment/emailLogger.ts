@@ -1,22 +1,34 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
-import { EmailLogEntry, EmailLogUpdate } from './types.ts';
+
+import { createClient } from '@supabase/supabase-js';
+
+interface LogEntry {
+  id?: string;
+  recipient: string;
+  cc?: string[] | null;
+  country: string;
+  risk_level: string;
+  sent_by: string;
+  recipient_status: string;
+  cc_status?: string | null;
+  sent_at: string;
+  traveller_name?: string | null;
+  client_id?: string | null;
+  recipient_error_message?: string | null;
+  cc_error_message?: string | null;
+}
 
 export class EmailLogger {
-  private readonly supabase;
+  private supabase;
 
   constructor(supabaseUrl: string, supabaseKey: string) {
     this.supabase = createClient(supabaseUrl, supabaseKey);
   }
 
-  async createLog(logEntry: Omit<EmailLogEntry, 'id'>): Promise<EmailLogEntry> {
-    console.log('Creating email log with entry:', {
-      ...logEntry,
-      client_id: logEntry.client_id || 'not provided',
-    });
-
-    const { data, error } = await this.supabase
+  async createLog(data: LogEntry) {
+    console.log('Creating email log:', data);
+    const { data: logEntry, error } = await this.supabase
       .from('email_logs')
-      .insert([logEntry])
+      .insert([data])
       .select()
       .single();
 
@@ -25,23 +37,15 @@ export class EmailLogger {
       throw error;
     }
 
-    console.log('Successfully created email log:', {
-      id: data.id,
-      recipient: data.recipient,
-      client_id: data.client_id || 'not set',
-      sent_by: data.sent_by
-    });
-
-    return data;
+    return logEntry;
   }
 
-  async updateLog(logId: string, update: EmailLogUpdate): Promise<void> {
-    console.log('Updating email log:', { logId, update });
-    
+  async updateLog(id: string, updates: Partial<LogEntry>) {
+    console.log('Updating email log:', { id, updates });
     const { error } = await this.supabase
       .from('email_logs')
-      .update(update)
-      .eq('id', logId);
+      .update(updates)
+      .eq('id', id);
 
     if (error) {
       console.error('Error updating email log:', error);
