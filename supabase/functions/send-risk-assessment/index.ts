@@ -1,10 +1,11 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { EmailService } from "./emailService.ts";
 import { EmailLogger } from "./emailLogger.ts";
 import { SENDER_EMAIL, REPLY_TO_EMAIL, corsHeaders } from "./config.ts";
-import { generateEmailHtml } from "./emailTemplate.ts";
 import { EmailData, EmailResults } from "./types.ts";
-import { renderAsync } from '@react-email/components';
+import { renderAsync } from 'npm:@react-email/components@0.0.11';
+import React from 'npm:react@18.2.0';
 import RiskAssessmentEmail from './RiskAssessmentEmail.tsx';
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!;
@@ -23,13 +24,15 @@ async function sendEmails(emailData: EmailData, primaryRecipient: string, ccReci
       from: SENDER_EMAIL,
       to: [primaryRecipient],
       subject: emailData.subject,
-      html: generateEmailHtml(
-        emailData.country,
-        emailData.risk_level,
-        emailData.information,
-        false,
-        emailData.travellerName,
-        emailData.recordLocator
+      html: await renderAsync(
+        React.createElement(RiskAssessmentEmail, {
+          country: emailData.country,
+          risk_level: emailData.risk_level,
+          information: emailData.information,
+          travellerName: emailData.travellerName,
+          recordLocator: emailData.recordLocator,
+          isCC: false
+        })
       ),
       reply_to: REPLY_TO_EMAIL
     })
@@ -38,28 +41,21 @@ async function sendEmails(emailData: EmailData, primaryRecipient: string, ccReci
   // Prepare CC emails if any
   if (ccRecipients.length > 0) {
     const ccSubject = `Risk Assessment - ${emailData.country} (Traveller: ${emailData.travellerName || 'Not specified'})`;
-    const ccHtml = `
-      <div style="margin-bottom: 20px; padding: 10px; background-color: #f5f5f5; border-radius: 5px;">
-        <p style="margin: 0; color: #666;">This email was sent as a CC. The primary recipient is: <strong>${primaryRecipient}</strong></p>
-        <p style="margin: 5px 0 0; color: #666;">Risk assessment for traveller: <strong>${emailData.travellerName || 'Not specified'}</strong></p>
-        <p style="margin: 5px 0 0; color: #666;">Risk assessment details below:</p>
-      </div>
-      ${generateEmailHtml(
-        emailData.country,
-        emailData.risk_level,
-        emailData.information,
-        true,
-        emailData.travellerName,
-        emailData.recordLocator
-      )}
-    `;
-
     emailPromises.push(
       emailService.sendEmail({
         from: SENDER_EMAIL,
         to: ccRecipients,
         subject: ccSubject,
-        html: ccHtml,
+        html: await renderAsync(
+          React.createElement(RiskAssessmentEmail, {
+            country: emailData.country,
+            risk_level: emailData.risk_level,
+            information: emailData.information,
+            travellerName: emailData.travellerName,
+            recordLocator: emailData.recordLocator,
+            isCC: true
+          })
+        ),
         reply_to: REPLY_TO_EMAIL
       })
     );
@@ -87,33 +83,6 @@ serve(async (req) => {
       user_id: requestData.user_id || 'not provided'
     });
 
-    // Render primary recipient email
-    const primaryHtml = await renderAsync(
-      React.createElement(RiskAssessmentEmail, {
-        country: requestData.country,
-        risk_level: requestData.risk_level,
-        information: requestData.information,
-        travellerName: requestData.travellerName,
-        recordLocator: requestData.recordLocator,
-        isCC: false
-      })
-    );
-
-    // Render CC recipient email if needed
-    let ccHtml;
-    if (requestData.cc?.length > 0) {
-      ccHtml = await renderAsync(
-        React.createElement(RiskAssessmentEmail, {
-          country: requestData.country,
-          risk_level: requestData.risk_level,
-          information: requestData.information,
-          travellerName: requestData.travellerName,
-          recordLocator: requestData.recordLocator,
-          isCC: true
-        })
-      );
-    }
-
     console.log('Creating email log with data:', {
       recipient: requestData.to,
       cc: requestData.cc?.length > 0 ? requestData.cc : null,
@@ -138,38 +107,24 @@ serve(async (req) => {
         traveller_name: requestData.travellerName || null,
         client_id: requestData.client_id || null
       }),
-      emailService.sendEmail({
-        from: SENDER_EMAIL,
-        to: [requestData.to],
-        subject: `Risk Assessment - ${requestData.country}`,
-        html: primaryHtml,
-        reply_to: REPLY_TO_EMAIL
-      })
+      sendEmails(
+        requestData,
+        requestData.to,
+        requestData.cc || []
+      )
     ]);
-
-    // Send CC emails if needed
-    let ccResults = null;
-    if (requestData.cc?.length > 0 && ccHtml) {
-      ccResults = await emailService.sendEmail({
-        from: SENDER_EMAIL,
-        to: requestData.cc,
-        subject: `Risk Assessment - ${requestData.country} (CC)`,
-        html: ccHtml,
-        reply_to: REPLY_TO_EMAIL
-      });
-    }
 
     // Update log with results
     await emailLogger.updateLog(logEntry.id, {
-      recipient_status: emailResults.success ? 'sent' : 'failed',
-      recipient_error_message: emailResults.success ? null : JSON.stringify(emailResults.error),
-      cc_status: ccResults ? (ccResults.success ? 'sent' : 'failed') : null,
-      cc_error_message: ccResults?.error ? JSON.stringify(ccResults.error) : null,
+      recipient_status: emailResults.primary.success ? 'sent' : 'failed',
+      recipient_error_message: emailResults.primary.success ? null : JSON.stringify(emailResults.primary.error),
+      cc_status: emailResults.cc ? (emailResults.cc.success ? 'sent' : 'failed') : null,
+      cc_error_message: emailResults.cc?.error ? JSON.stringify(emailResults.cc.error) : null,
     });
 
     return new Response(JSON.stringify(emailResults), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: emailResults.success ? 200 : 500,
+      status: emailResults.primary.success ? 200 : 500,
     });
 
   } catch (error: any) {

@@ -1,4 +1,3 @@
-
 import {
   Body,
   Container,
@@ -8,8 +7,8 @@ import {
   Preview,
   Section,
   Text,
-} from '@react-email/components';
-import * as React from 'react';
+} from 'npm:@react-email/components@0.0.11';
+import * as React from 'npm:react@18.2.0';
 
 interface RiskAssessmentEmailProps {
   country: string;
