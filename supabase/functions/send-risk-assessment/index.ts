@@ -18,12 +18,15 @@ const emailLogger = new EmailLogger(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 async function sendEmails(emailData: EmailData, primaryRecipient: string, ccRecipients: string[]): Promise<EmailResults> {
   const emailPromises = [];
 
+  // Construct subject line
+  const subject = `Risk Assessment - ${emailData.country} (Traveller: ${emailData.travellerName || 'Not specified'})`;
+
   // Prepare primary email
   emailPromises.push(
     emailService.sendEmail({
       from: SENDER_EMAIL,
       to: [primaryRecipient],
-      subject: emailData.subject,
+      subject: subject,
       html: await renderAsync(
         React.createElement(RiskAssessmentEmail, {
           country: emailData.country,
@@ -40,12 +43,11 @@ async function sendEmails(emailData: EmailData, primaryRecipient: string, ccReci
 
   // Prepare CC emails if any
   if (ccRecipients.length > 0) {
-    const ccSubject = `Risk Assessment - ${emailData.country} (Traveller: ${emailData.travellerName || 'Not specified'})`;
     emailPromises.push(
       emailService.sendEmail({
         from: SENDER_EMAIL,
         to: ccRecipients,
-        subject: ccSubject,
+        subject: subject,
         html: await renderAsync(
           React.createElement(RiskAssessmentEmail, {
             country: emailData.country,

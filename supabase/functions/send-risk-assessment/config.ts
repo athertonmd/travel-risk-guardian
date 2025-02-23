@@ -4,5 +4,6 @@ export const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-export const SENDER_EMAIL = 'notifications@travelriskguardian.com';
-export const REPLY_TO_EMAIL = 'support@travelriskguardian.com';
+// Temporarily use resend.dev domain until travelriskguardian.com is verified
+export const SENDER_EMAIL = 'onboarding@resend.dev';
+export const REPLY_TO_EMAIL = 'support@resend.dev';
